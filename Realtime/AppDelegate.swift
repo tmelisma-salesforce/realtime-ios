@@ -35,31 +35,6 @@ class AppDelegate : UIResponder, UIApplicationDelegate {
         super.init()
         MobileSyncSDKManager.initializeSDK()
         
-        // Add ourselves as a delegate to intercept OAuth events for debugging
-        UserAccountManager.shared.add(self)
-        
-        // Listen to OAuth notifications for debugging
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(userWillLogIn(_:)),
-            name: NSNotification.Name(rawValue: "kSFNotificationUserWillLogIn"),
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(userDidLogIn(_:)),
-            name: NSNotification.Name(rawValue: "kSFNotificationUserDidLogIn"),
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(userCancelledAuth(_:)),
-            name: NSNotification.Name(rawValue: "kSFNotificationUserCancelledAuth"),
-            object: nil
-        )
-        
         // Uncomment when enabling log in via Salesforce UI Bridge API generated QR codes.
         // self.setupQrCodeLogin()
     }
@@ -222,57 +197,4 @@ class AppDelegate : UIResponder, UIApplicationDelegate {
         assert(SalesforceLoginViewController.qrCodeLoginUrlJsonPkceCodeVerifierKey != "your-qr-code-login-url-json-pkce-code-verifier-key", "Please add your login QR code URL's UI Bridge API JSON PKCE code verifier key.")
     }
     
-    // MARK: - OAuth Debug Logging
-    
-    @objc func userWillLogIn(_ notification: Notification) {
-        print("🔐 [OAuth] User will log in")
-        if let userInfo = notification.userInfo {
-            print("🔐 [OAuth] Login notification userInfo: \(userInfo)")
-        }
-    }
-    
-    @objc func userDidLogIn(_ notification: Notification) {
-        print("🔐 [OAuth] User did log in successfully")
-        if let userInfo = notification.userInfo {
-            print("🔐 [OAuth] Success notification userInfo: \(userInfo)")
-        }
-    }
-    
-    @objc func userCancelledAuth(_ notification: Notification) {
-        print("🔐 [OAuth] User cancelled authentication")
-        if let userInfo = notification.userInfo {
-            print("🔐 [OAuth] Cancellation notification userInfo: \(userInfo)")
-        }
-    }
 }
-
-// MARK: - UserAccountManagerDelegate
-
-extension AppDelegate: UserAccountManagerDelegate {
-    
-    func userAccountManager(accountManager: UserAccountManager, didFailAuthenticationWith error: Error, info: AuthInfo?) -> Bool {
-        print("🚨 [OAuth ERROR] Authentication failed!")
-        print("🚨 [OAuth ERROR] Error: \(error)")
-        print("🚨 [OAuth ERROR] Error localizedDescription: \(error.localizedDescription)")
-        print("🚨 [OAuth ERROR] Error domain: \((error as NSError).domain)")
-        print("🚨 [OAuth ERROR] Error code: \((error as NSError).code)")
-        print("🚨 [OAuth ERROR] Error userInfo: \((error as NSError).userInfo)")
-        
-        if let authInfo = info {
-            print("🚨 [OAuth ERROR] Auth type: \(authInfo.authTypeDescription)")
-        }
-        
-        // Extract any additional error details from userInfo
-        let nsError = error as NSError
-        if let errorDescription = nsError.userInfo["error_description"] as? String {
-            print("🚨 [OAuth ERROR] Server error_description: \(errorDescription)")
-        }
-        if let errorCode = nsError.userInfo["error"] as? String {
-            print("🚨 [OAuth ERROR] Server error code: \(errorCode)")
-        }
-        
-        // Return false to let SDK handle the error normally
-        return false
-    }
-}
-
