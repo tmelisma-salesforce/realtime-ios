@@ -41,21 +41,11 @@ class SalesforcePubSubAuth {
         return UserAccountManager.shared.currentUserAccount?.credentials.instanceUrl?.absoluteString
     }
     
-    /// Organization ID (tenant ID) extracted from user identity URL
+    /// Organization ID (tenant ID) from user account identity
     var tenantID: String? {
-        guard let identityUrl = UserAccountManager.shared.currentUserAccount?.credentials.userId else {
-            return nil
-        }
-        
-        // Identity URL format: https://login.salesforce.com/id/{ORG_ID}/{USER_ID}
-        // Extract the organization ID (second to last path component)
-        let components = identityUrl.components(separatedBy: "/")
-        guard components.count >= 2 else {
-            return nil
-        }
-        
-        // Return the organization ID (00Dxx...)
-        return components[components.count - 2]
+        // Access org ID directly from account identity
+        // See: https://forcedotcom.github.io/SalesforceMobileSDK-iOS/Documentation/SalesforceSDKCore/html/Classes/SFUserAccountIdentity.html
+        return UserAccountManager.shared.currentUserAccount?.accountIdentity.orgId
     }
     
     /// Check if all required credentials are available

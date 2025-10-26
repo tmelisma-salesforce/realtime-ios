@@ -81,6 +81,33 @@ class PubSubSubscriptionManager: ObservableObject {
             do {
                 print("🚀 PubSubSubscriptionManager: Starting subscription")
                 try await performSubscription()
+            } catch PubSubError.authenticationFailed {
+                print("❌ PubSubSubscriptionManager: Authentication failed - attempting token refresh...")
+                await MainActor.run {
+                    connectionStatus = .connecting
+                }
+                
+                // Try to refresh token
+                do {
+                    try await PubSubClientManager.shared.refreshAccessToken()
+                    print("✅ PubSubSubscriptionManager: Token refreshed, retrying immediately...")
+                    
+                    // Shutdown old client to force re-initialization with new token
+                    await PubSubClientManager.shared.shutdown()
+                    
+                    // Retry immediately with new token
+                    continue
+                } catch {
+                    print("❌ PubSubSubscriptionManager: Token refresh failed - \(error)")
+                    await MainActor.run {
+                        connectionStatus = .disconnected
+                    }
+                    
+                    // Wait before retrying
+                    let retryDelay = 10.0
+                    print("⏳ PubSubSubscriptionManager: Retrying in \(Int(retryDelay))s...")
+                    try? await Task.sleep(nanoseconds: UInt64(retryDelay * 1_000_000_000))
+                }
             } catch {
                 print("❌ PubSubSubscriptionManager: Subscription error - \(error)")
                 await MainActor.run {

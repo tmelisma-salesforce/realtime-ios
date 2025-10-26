@@ -26,6 +26,7 @@ import Foundation
 import GRPCCore
 import GRPCNIOTransportHTTP2
 import GRPCProtobuf
+import SalesforceSDKCore
 
 /// Manages gRPC client connection and RPC calls to Salesforce Pub/Sub API
 @available(iOS 18.0, *)
@@ -47,6 +48,7 @@ class PubSubClientManager {
     
     /// Initialize the gRPC client with authentication
     func setupClient() async throws {
+        // Verify credentials are available (early check for better error reporting)
         guard let credentials = SalesforcePubSubAuth.shared.credentials else {
             throw PubSubError.authenticationFailed
         }
@@ -54,6 +56,7 @@ class PubSubClientManager {
         print("🔧 PubSubClientManager: Setting up gRPC client")
         print("   Instance: \(credentials.instanceURL)")
         print("   Tenant: \(credentials.tenantID)")
+        print("   Note: Credentials will be fetched fresh on each request")
         
         // Create HTTP/2 transport with TLS
         let transport = try HTTP2ClientTransport.Posix(
@@ -62,9 +65,10 @@ class PubSubClientManager {
         )
         
         // Create gRPC client with auth interceptor
+        // Note: AuthInterceptor fetches fresh credentials on each request
         let client = GRPCClient(
             transport: transport,
-            interceptors: [AuthInterceptor(credentials: credentials)]
+            interceptors: [AuthInterceptor()]
         )
         
         grpcClient = client
@@ -163,21 +167,59 @@ class PubSubClientManager {
         grpcClient = nil
         pubsubClient = nil
     }
+    
+    // MARK: - Token Management
+    
+    /// Manually refresh the access token using Mobile SDK
+    /// This wraps the callback-based SDK method in async/await
+    /// Only called when we get an authentication error from PubSub API
+    func refreshAccessToken() async throws {
+        guard let currentUser = UserAccountManager.shared.currentUserAccount else {
+            throw PubSubError.authenticationFailed
+        }
+        
+        print("🔑 PubSubClientManager: Manually refreshing access token...")
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            // Use the SDK's refresh method with OAuthCredentials
+            let success = UserAccountManager.shared.refresh(credentials: currentUser.credentials) { result in
+                switch result {
+                case .success(let (userAccount, authInfo)):
+                    print("✅ PubSubClientManager: Token refresh succeeded for user: \(userAccount.accountIdentity.userId)")
+                    print("   Auth info: \(authInfo)")
+                    continuation.resume()
+                    
+                case .failure(let error):
+                    print("❌ PubSubClientManager: Token refresh failed - \(error)")
+                    continuation.resume(throwing: error)
+                }
+            }
+            
+            if !success {
+                print("❌ PubSubClientManager: Failed to initiate token refresh")
+                continuation.resume(throwing: PubSubError.authenticationFailed)
+            }
+        }
+    }
 }
 
 // MARK: - Auth Interceptor
 
 /// Injects Salesforce authentication headers into every gRPC request
+/// Fetches fresh credentials from Mobile SDK on each request to ensure we always use current tokens
 @available(iOS 18.0, *)
 private struct AuthInterceptor: ClientInterceptor {
-    let credentials: (accessToken: String, instanceURL: String, tenantID: String)
-    
     func intercept<Input: Sendable, Output: Sendable>(
         request: StreamingClientRequest<Input>,
         context: ClientContext,
         next: @Sendable (StreamingClientRequest<Input>, ClientContext) async throws -> StreamingClientResponse<Output>
     ) async throws -> StreamingClientResponse<Output> {
-        // Add authentication headers
+        // Fetch fresh credentials from Mobile SDK (in case token was refreshed)
+        guard let credentials = SalesforcePubSubAuth.shared.credentials else {
+            throw PubSubError.authenticationFailed
+        }
+        
+        // Add authentication headers with current token
         var metadata = request.metadata
         metadata.addString(credentials.accessToken, forKey: "accesstoken")
         metadata.addString(credentials.instanceURL, forKey: "instanceurl")
