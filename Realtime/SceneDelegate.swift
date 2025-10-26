@@ -121,7 +121,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
    
    func setupRootViewController() {
        self.window?.rootViewController = UIHostingController(
-           rootView: OpportunitiesListView()
+           rootView: MainTabView()
        )
    }
    

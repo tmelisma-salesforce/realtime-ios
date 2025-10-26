@@ -42,20 +42,15 @@ struct OpportunitiesListView: View {
                         if let accountName = opportunity.Account?.Name {
                             Text(accountName)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
                         } else {
                             Text("No Account")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .italic()
                         }
                         
                         if let stageName = opportunity.StageName {
                             Text("•")
-                                .foregroundColor(.secondary)
                             Text(stageName)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
                         }
                     }
                     
@@ -63,17 +58,14 @@ struct OpportunitiesListView: View {
                         if let amount = opportunity.Amount {
                             Text(String(format: "$%.2f", amount))
                                 .font(.subheadline)
-                                .foregroundColor(.green)
                         }
                         
                         if let closeDate = opportunity.CloseDate {
                             if opportunity.Amount != nil {
                                 Text("•")
-                                    .foregroundColor(.secondary)
                             }
                             Text(closeDate)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
                         }
                     }
                 }

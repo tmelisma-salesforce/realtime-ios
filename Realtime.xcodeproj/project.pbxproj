@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */; };
 		4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E94F237DD7FF005BCAE9 /* OpportunitiesListModel.swift */; };
+		4F13E952237DD800005BCAE9 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E94D237DD800005BCAE9 /* MainTabView.swift */; };
 		4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C4791B754AF1002F9F90 /* AppDelegate.swift */; };
 		4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C49D1B755242002F9F90 /* InitialViewController.swift */; };
 		69B48C322AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */; };
@@ -24,6 +25,7 @@
 /* Begin PBXFileReference section */
 		1519615E030754F31935E3FB /* Pods_Realtime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Realtime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		42B24726B18B9444EBA72C07 /* Pods-Realtime.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Realtime.debug.xcconfig"; path = "Target Support Files/Pods-Realtime/Pods-Realtime.debug.xcconfig"; sourceTree = "<group>"; };
+		4F13E94D237DD800005BCAE9 /* MainTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpportunitiesListView.swift; sourceTree = "<group>"; };
 		4F13E94F237DD7FF005BCAE9 /* OpportunitiesListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpportunitiesListModel.swift; sourceTree = "<group>"; };
 		4FD6C4741B754AF1002F9F90 /* Realtime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Realtime.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				B73B520C234FA65F001B069B /* SceneDelegate.swift */,
+				4F13E94D237DD800005BCAE9 /* MainTabView.swift */,
 				4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */,
 			);
 			name = SwiftUI;
@@ -266,6 +269,7 @@
 				D33B88422CA60F0E00892D80 /* QrCodeScanController.swift in Sources */,
 				4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */,
 				D33B88412CA60F0E00892D80 /* LoginTypeSelectionViewController.swift in Sources */,
+				4F13E952237DD800005BCAE9 /* MainTabView.swift in Sources */,
 				4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */,
 				4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */,
 				4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */,
