@@ -27,17 +27,32 @@ import Foundation
 import SalesforceSDKCore
 import Combine
 
-struct Opportunity: Identifiable, Decodable {
+struct Opportunity: Identifiable, Decodable, Equatable {
     var id: String { Id }
     let Id: String
-    let Name: String
-    let Amount: Double?
-    let StageName: String?
-    let CloseDate: String?
+    var Name: String
+    var Amount: Double?
+    var StageName: String?
+    var CloseDate: String?
     let Account: AccountRelation?
     
-    struct AccountRelation: Decodable {
+    // Change tracking properties (not from API)
+    var changedFields: Set<String> = []
+    var lastUpdated: Date?
+    var justChanged: Bool = false
+    
+    struct AccountRelation: Decodable, Equatable {
         let Name: String?
+    }
+    
+    // Custom CodingKeys to exclude change tracking properties from decoding
+    enum CodingKeys: String, CodingKey {
+        case Id, Name, Amount, StageName, CloseDate, Account
+    }
+    
+    // Equatable conformance (for comparing opportunities)
+    static func == (lhs: Opportunity, rhs: Opportunity) -> Bool {
+        return lhs.Id == rhs.Id
     }
 }
 
