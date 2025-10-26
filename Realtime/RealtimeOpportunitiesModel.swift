@@ -145,8 +145,12 @@ class RealtimeOpportunitiesModel: ObservableObject {
         if let amount = event.Amount {
             opportunity.Amount = amount
         }
-        if let closeDate = event.CloseDate {
-            opportunity.CloseDate = closeDate
+        if let closeDateMillis = event.CloseDate {
+            // Convert milliseconds since epoch to date string (YYYY-MM-DD format)
+            let date = Date(timeIntervalSince1970: TimeInterval(closeDateMillis) / 1000.0)
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withFullDate]  // Just the date, no time
+            opportunity.CloseDate = formatter.string(from: date)
         }
         
         // Track changed fields (cumulative, never cleared)

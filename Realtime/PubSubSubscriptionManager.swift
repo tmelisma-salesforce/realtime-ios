@@ -40,6 +40,7 @@ class PubSubSubscriptionManager: ObservableObject {
     private var latestReplayId: Data?
     private var cachedAvro: Avro?
     private var cachedSchemaId: String?
+    // Note: No need to cache the schema separately - it's stored inside the Avro instance
     
     private let topicName = "/data/OpportunityChangeEvent"
     
@@ -129,20 +130,41 @@ class PubSubSubscriptionManager: ObservableObject {
         
         // Step 1: Get topic info and schema
         print("📡 PubSubSubscriptionManager: Getting topic info...")
-        let topicInfo = try await clientManager.getTopic(topicName: topicName)
+        print("   Topic name: \(topicName)")
         
-        guard topicInfo.canSubscribe else {
-            throw PubSubError.connectionFailed
+        let topicInfo: Eventbus_V1_TopicInfo
+        let schemaJSON: String
+        
+        do {
+            topicInfo = try await clientManager.getTopic(topicName: topicName)
+            print("   ✅ Got topic info successfully")
+            
+            guard topicInfo.canSubscribe else {
+                print("   ❌ Topic does not allow subscription!")
+                throw PubSubError.connectionFailed
+            }
+            print("   ✓ Topic allows subscription")
+            
+            print("📡 PubSubSubscriptionManager: Getting schema...")
+            print("   Schema ID: \(topicInfo.schemaID)")
+            schemaJSON = try await clientManager.getSchemaInfo(schemaId: topicInfo.schemaID)
+            print("   ✅ Got schema successfully (\(schemaJSON.count) bytes)")
+        } catch {
+            print("❌ PubSubSubscriptionManager: Failed in performSubscription setup!")
+            print("   Error type: \(type(of: error))")
+            print("   Error: \(error)")
+            print("   Localized: \(error.localizedDescription)")
+            throw error
         }
         
-        print("📡 PubSubSubscriptionManager: Getting schema...")
-        let schemaJSON = try await clientManager.getSchemaInfo(schemaId: topicInfo.schemaID)
-        
         // Create Avro decoder with schema
+        print("   → Decoding Avro schema...")
+        print("   📋 Schema JSON length: \(schemaJSON.count) bytes")
         let avro = Avro()
-        _ = try avro.decodeSchema(schema: schemaJSON)
+        _ = avro.decodeSchema(schema: schemaJSON)  // Stores schema internally in avro.schema
         cachedAvro = avro
         cachedSchemaId = topicInfo.schemaID
+        print("   ✓ Avro schema decoded and cached (stored inside Avro instance)")
         
         print("✅ PubSubSubscriptionManager: Schema loaded")
         
@@ -157,22 +179,36 @@ class PubSubSubscriptionManager: ObservableObject {
         print("📡 PubSubSubscriptionManager: Starting Subscribe stream...")
         
         let client = try await clientManager.getClient()
+        print("   ✓ Got client for subscription")
+        
+        print("   → Starting bidirectional stream...")
+        
+        // Create AsyncStream for flow control (PUBSUB_GUIDE.md lines 387-435)
+        // Response handler yields to signal request sender to send next FetchRequest
+        let (responseSignal, signalContinuation) = AsyncStream.makeStream(of: Void.self)
         
         // Use the generated client's subscribe method with bidirectional streaming
         try await client.subscribe(
             requestProducer: { writer in
                 // Send FetchRequests
-                try await self.sendFetchRequests(writer: writer)
+                print("📤 PubSubSubscriptionManager: Request producer called")
+                try await self.sendFetchRequests(writer: writer, responseSignal: responseSignal)
             },
             onResponse: { responseStream in
                 // Receive and process FetchResponses
-                try await self.receiveFetchResponses(stream: responseStream)
+                print("📥 PubSubSubscriptionManager: Response handler called")
+                try await self.receiveFetchResponses(stream: responseStream, signalContinuation: signalContinuation)
             }
         )
+        print("⚠️ PubSubSubscriptionManager: subscribe() call completed (stream ended)")
     }
     
     /// Send FetchRequest messages to the server
-    private func sendFetchRequests(writer: RPCWriter<Eventbus_V1_FetchRequest>) async throws {
+    /// This uses an AsyncStream to coordinate with response handler (flow control)
+    private func sendFetchRequests(
+        writer: RPCWriter<Eventbus_V1_FetchRequest>,
+        responseSignal: AsyncStream<Void>
+    ) async throws {
         print("📤 PubSubSubscriptionManager: Starting FetchRequest sender")
         
         // Create initial FetchRequest
@@ -183,26 +219,40 @@ class PubSubSubscriptionManager: ObservableObject {
         
         // Send initial request
         try await writer.write(request)
-        print("📤 PubSubSubscriptionManager: Sent initial FetchRequest")
+        print("📤 PubSubSubscriptionManager: Sent initial FetchRequest (#1)")
         
-        // Keep connection alive by sending periodic requests
-        // The response handler will trigger when events arrive
-        while !Task.isCancelled {
-            try await Task.sleep(nanoseconds: 300_000_000_000) // 5 minutes keepalive
+        var requestCount = 1
+        
+        // FLOW CONTROL: Wait for response handler to signal, then send next request
+        // This implements the pattern from PUBSUB_GUIDE.md lines 386-435
+        for await _ in responseSignal {
+            guard !Task.isCancelled else { break }
             
-            // Send another request to keep stream alive
-            var keepaliveRequest = Eventbus_V1_FetchRequest()
-            keepaliveRequest.numRequested = 1
-            try await writer.write(keepaliveRequest)
-            print("📤 PubSubSubscriptionManager: Sent keepalive FetchRequest")
+            requestCount += 1
+            
+            // Send next FetchRequest immediately after receiving response
+            var nextRequest = Eventbus_V1_FetchRequest()
+            nextRequest.numRequested = 1
+            try await writer.write(nextRequest)
+            print("📤 PubSubSubscriptionManager: Sent FetchRequest #\(requestCount) (after response)")
         }
+        
+        print("📤 PubSubSubscriptionManager: Request sender stopped")
     }
     
     /// Receive and process FetchResponse messages from the server
-    private func receiveFetchResponses(stream: StreamingClientResponse<Eventbus_V1_FetchResponse>) async throws {
+    private func receiveFetchResponses(
+        stream: StreamingClientResponse<Eventbus_V1_FetchResponse>,
+        signalContinuation: AsyncStream<Void>.Continuation
+    ) async throws {
         print("📥 PubSubSubscriptionManager: Starting FetchResponse receiver")
         
         for try await response in stream.messages {
+            // FLOW CONTROL: Signal request sender IMMEDIATELY (as per PUBSUB_GUIDE.md line 407)
+            // This MUST happen before processing events to allow next request to be sent
+            signalContinuation.yield()
+            print("   ✓ Signaled request sender to send next FetchRequest")
+            
             // Store latest replay ID for reconnection
             if !response.latestReplayID.isEmpty {
                 latestReplayId = response.latestReplayID
@@ -227,6 +277,8 @@ class PubSubSubscriptionManager: ObservableObject {
             }
         }
         
+        // Stream ended - finish the continuation
+        signalContinuation.finish()
         print("⚠️ PubSubSubscriptionManager: Response stream ended")
     }
     
@@ -250,12 +302,39 @@ class PubSubSubscriptionManager: ObservableObject {
             print("⚠️ PubSubSubscriptionManager: Schema changed, fetching new schema...")
             let newSchemaJSON = try await PubSubClientManager.shared.getSchemaInfo(schemaId: eventInfo.schemaID)
             let newAvro = Avro()
-            _ = try newAvro.decodeSchema(schema: newSchemaJSON)
+            _ = newAvro.decodeSchema(schema: newSchemaJSON)  // Stores internally
             cachedAvro = newAvro
             cachedSchemaId = eventInfo.schemaID
+            print("   ✓ New schema cached in Avro instance")
         }
         
-        // Decode Avro payload
+        // Decode Avro payload using the schema stored in the Avro instance
+        // The decodeSchema() call above sets the schema internally in the Avro object
+        
+        // DEBUG: Dump the schema to understand the structure
+        print("🔍 DEBUG: About to decode payload")
+        if let schema = avro.getSchema() {
+            print("   Schema type: \(schema)")
+            // Try to encode schema to JSON to see it
+            do {
+                let schemaData = try avro.encodeSchema(schema: schema)
+                if let schemaString = String(data: schemaData, encoding: .utf8) {
+                    print("   📋 SCHEMA JSON (first 500 chars):")
+                    print("   \(schemaString.prefix(500))")
+                }
+            } catch {
+                print("   ⚠️ Could not encode schema: \(error)")
+            }
+        }
+        
+        // DEBUG: Dump first 100 bytes of payload in hex
+        print("   📦 PAYLOAD (first 100 bytes as hex):")
+        let hexBytes = payload.prefix(100).map { String(format: "%02x", $0) }.joined(separator: " ")
+        print("   \(hexBytes)")
+        print("   📦 PAYLOAD (first 100 bytes as decimal):")
+        let decBytes = payload.prefix(100).map { String($0) }.joined(separator: " ")
+        print("   \(decBytes)")
+        
         do {
             let decodedPayload: OpportunityChangeEventPayload = try avro.decode(from: payload)
             

@@ -38,11 +38,18 @@ class PubSubClientManager {
     private var pubsubClient: Eventbus_V1_PubSub.Client<HTTP2ClientTransport.Posix>?
     private var schemaCache: [String: String] = [:]
     
+    // CRITICAL: Task that runs the gRPC client
+    // Based on official Swift.org gRPC Swift 2 docs, the client needs to be "run"
+    // See: https://www.swift.org/blog/grpc-swift-2/
+    private var clientRunTask: Task<Void, Never>?
+    
     // Salesforce Pub/Sub API endpoint
     private let pubSubHost = "api.pubsub.salesforce.com"
     private let pubSubPort = 7443
     
-    private init() {}
+    private init() {
+        print("🏗️ PubSubClientManager: Instance created")
+    }
     
     // MARK: - Client Setup
     
@@ -50,47 +57,87 @@ class PubSubClientManager {
     func setupClient() async throws {
         // Verify credentials are available (early check for better error reporting)
         guard let credentials = SalesforcePubSubAuth.shared.credentials else {
+            print("❌ PubSubClientManager: No credentials available!")
             throw PubSubError.authenticationFailed
         }
         
         print("🔧 PubSubClientManager: Setting up gRPC client")
         print("   Instance: \(credentials.instanceURL)")
         print("   Tenant: \(credentials.tenantID)")
+        print("   Access Token Length: \(credentials.accessToken.count) chars")
+        print("   Target: \(pubSubHost):\(pubSubPort)")
         print("   Note: Credentials will be fetched fresh on each request")
         
-        // Create HTTP/2 transport with TLS
-        let transport = try HTTP2ClientTransport.Posix(
-            target: .dns(host: pubSubHost, port: pubSubPort),
-            transportSecurity: .tls
-        )
-        
-        // Create gRPC client with auth interceptor
-        // Note: AuthInterceptor fetches fresh credentials on each request
-        let client = GRPCClient(
-            transport: transport,
-            interceptors: [AuthInterceptor()]
-        )
-        
-        grpcClient = client
-        
-        // Create Pub/Sub API client using generated code
-        pubsubClient = Eventbus_V1_PubSub.Client(wrapping: client)
-        
-        print("✅ PubSubClientManager: gRPC client initialized")
+        do {
+            // Create HTTP/2 transport with TLS
+            print("   → Creating HTTP/2 transport...")
+            let transport = try HTTP2ClientTransport.Posix(
+                target: .dns(host: pubSubHost, port: pubSubPort),
+                transportSecurity: .tls
+            )
+            print("   ✓ Transport created")
+            
+            // Create gRPC client with auth interceptor
+            // Note: AuthInterceptor fetches fresh credentials on each request
+            print("   → Creating GRPCClient with AuthInterceptor...")
+            let client = GRPCClient(
+                transport: transport,
+                interceptors: [AuthInterceptor()]
+            )
+            print("   ✓ GRPCClient created")
+            
+            // CRITICAL: Run the client in background Task
+            // Without this, the client is created but never processes requests!
+            // Source: GRPCClient.swift lines 46-56 and withGRPCClient implementation (lines 437-446)
+            // The withGRPCClient helper does this internally, but we need a long-lived client
+            print("   → Starting GRPCClient.runConnections() in background task...")
+            clientRunTask = Task {
+                do {
+                    print("      🚀 GRPCClient.runConnections() task started")
+                    try await client.runConnections()
+                    print("      ⚠️ GRPCClient.runConnections() completed (client was shut down)")
+                } catch {
+                    print("      ❌ GRPCClient.runConnections() failed: \(error)")
+                }
+            }
+            print("   ✓ GRPCClient.runConnections() task started")
+            
+            grpcClient = client
+            
+            // Create Pub/Sub API client using generated code
+            print("   → Creating Pub/Sub API client...")
+            pubsubClient = Eventbus_V1_PubSub.Client(wrapping: client)
+            print("   ✓ Pub/Sub API client created")
+            
+            print("✅ PubSubClientManager: gRPC client initialized successfully")
+        } catch {
+            print("❌ PubSubClientManager: Failed to setup client!")
+            print("   Error type: \(type(of: error))")
+            print("   Error: \(error)")
+            throw error
+        }
     }
     
     /// Get the Pub/Sub API client, initializing if needed
     func getClient() async throws -> Eventbus_V1_PubSub.Client<HTTP2ClientTransport.Posix> {
+        print("   → getClient() called")
+        print("      Thread: \(Thread.current)")
+        print("      pubsubClient exists: \(pubsubClient != nil)")
+        
         if let client = pubsubClient {
+            print("      ✓ Returning existing client")
             return client
         }
         
+        print("      → Need to setup client first...")
         try await setupClient()
         
         guard let client = pubsubClient else {
+            print("      ❌ setupClient() completed but pubsubClient is still nil!")
             throw PubSubError.clientNotInitialized
         }
         
+        print("      ✓ Client setup complete, returning client")
         return client
     }
     
@@ -99,21 +146,82 @@ class PubSubClientManager {
     /// Get topic information including schema ID
     func getTopic(topicName: String) async throws -> Eventbus_V1_TopicInfo {
         print("📡 PubSubClientManager: Getting topic info for \(topicName)")
+        print("   Thread: \(Thread.current)")
+        print("   Is MainActor: \(Thread.isMainThread)")
         
         let client = try await getClient()
+        print("   ✓ Got client instance: \(type(of: client))")
+        print("   ✓ Client memory address: \(Unmanaged.passUnretained(client as AnyObject).toOpaque())")
         
         // Create request
         var request = Eventbus_V1_TopicRequest()
         request.topicName = topicName
+        print("   ✓ Created TopicRequest for: \(topicName)")
+        print("   ✓ Request fields: topicName=\(request.topicName)")
+        print("   → About to call client.getTopic(request)...")
+        print("   → This should trigger AuthInterceptor...")
         
-        // Make unary RPC call using generated convenience method
-        let topicInfo = try await client.getTopic(request)
+        // Add timeout to detect hangs
+        let startTime = Date()
         
-        print("✅ PubSubClientManager: Topic info received")
-        print("   Schema ID: \(topicInfo.schemaID)")
-        print("   Can Subscribe: \(topicInfo.canSubscribe)")
-        
-        return topicInfo
+        return try await withThrowingTaskGroup(of: Eventbus_V1_TopicInfo.self) { group in
+            print("   → TaskGroup created, adding RPC task...")
+            
+            // Task 1: Actual RPC call
+            group.addTask {
+                print("      🔹 RPC Task started on thread: \(Thread.current)")
+                print("      🔹 About to call client.getTopic()...")
+                
+                do {
+                    print("      🔹 Entering try block for client.getTopic()...")
+                    let topicInfo = try await client.getTopic(request)
+                    let elapsed = Date().timeIntervalSince(startTime)
+                    print("✅ PubSubClientManager: Topic info received after \(String(format: "%.2f", elapsed))s")
+                    print("   Schema ID: \(topicInfo.schemaID)")
+                    print("   Can Subscribe: \(topicInfo.canSubscribe)")
+                    print("   Topic Name: \(topicInfo.topicName)")
+                    print("   RPC ID: \(topicInfo.rpcID)")
+                    return topicInfo
+                } catch {
+                    let elapsed = Date().timeIntervalSince(startTime)
+                    print("❌ PubSubClientManager: getTopic() threw error after \(String(format: "%.2f", elapsed))s!")
+                    print("   Error type: \(type(of: error))")
+                    print("   Error: \(error)")
+                    print("   Localized: \(error.localizedDescription)")
+                    throw error
+                }
+            }
+            
+            print("   → RPC task added, adding timeout task...")
+            
+            // Task 2: Timeout with progress indicators
+            group.addTask {
+                for i in 1...30 {
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    if i % 5 == 0 {
+                        print("      ⏱️  Still waiting... \(i)s elapsed")
+                    }
+                }
+                print("⏱️ PubSubClientManager: getTopic() TIMEOUT after 30s!")
+                print("   This indicates the gRPC call is hanging/blocked")
+                print("   The AuthInterceptor was never called!")
+                throw PubSubError.connectionFailed
+            }
+            
+            print("   → Timeout task added, waiting for first result...")
+            
+            // Return first result (either success or timeout)
+            guard let result = try await group.next() else {
+                print("   ❌ TaskGroup.next() returned nil!")
+                throw PubSubError.connectionFailed
+            }
+            
+            print("   ✓ Got result from TaskGroup, canceling other tasks...")
+            
+            // Cancel the other task
+            group.cancelAll()
+            return result
+        }
     }
     
     /// Get Avro schema by schema ID (with caching)
@@ -164,8 +272,24 @@ class PubSubClientManager {
     /// Shutdown the gRPC client
     func shutdown() async {
         print("🔌 PubSubClientManager: Shutting down gRPC client")
+        
+        if let client = grpcClient {
+            print("   → Calling beginGracefulShutdown() (signals runConnections() to complete)...")
+            client.beginGracefulShutdown()
+            print("   ✓ beginGracefulShutdown() called")
+            
+            // Wait for the runConnections task to complete
+            if let runTask = clientRunTask {
+                print("   → Waiting for GRPCClient.runConnections() task to complete...")
+                await runTask.value
+                print("   ✓ GRPCClient.runConnections() task completed")
+            }
+        }
+        
         grpcClient = nil
         pubsubClient = nil
+        clientRunTask = nil
+        print("✅ PubSubClientManager: Shutdown complete")
     }
     
     // MARK: - Token Management
@@ -214,10 +338,19 @@ private struct AuthInterceptor: ClientInterceptor {
         context: ClientContext,
         next: @Sendable (StreamingClientRequest<Input>, ClientContext) async throws -> StreamingClientResponse<Output>
     ) async throws -> StreamingClientResponse<Output> {
+        print("🔐 AuthInterceptor: Intercepting request")
+        print("   Method: \(context.descriptor)")
+        
         // Fetch fresh credentials from Mobile SDK (in case token was refreshed)
         guard let credentials = SalesforcePubSubAuth.shared.credentials else {
+            print("❌ AuthInterceptor: No credentials available!")
             throw PubSubError.authenticationFailed
         }
+        
+        print("   ✓ Got credentials")
+        print("   Access Token: \(credentials.accessToken.prefix(20))...")
+        print("   Instance URL: \(credentials.instanceURL)")
+        print("   Tenant ID: \(credentials.tenantID)")
         
         // Add authentication headers with current token
         var metadata = request.metadata
@@ -228,8 +361,19 @@ private struct AuthInterceptor: ClientInterceptor {
         var modifiedRequest = request
         modifiedRequest.metadata = metadata
         
-        // Forward to next interceptor/transport
-        return try await next(modifiedRequest, context)
+        print("   ✓ Added auth headers to metadata")
+        print("   → Forwarding to next interceptor/transport...")
+        
+        do {
+            let response = try await next(modifiedRequest, context)
+            print("   ✅ AuthInterceptor: Got response from transport")
+            return response
+        } catch {
+            print("   ❌ AuthInterceptor: Transport threw error!")
+            print("      Error type: \(type(of: error))")
+            print("      Error: \(error)")
+            throw error
+        }
     }
 }
 
