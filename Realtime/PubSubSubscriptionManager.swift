@@ -26,7 +26,28 @@ import Foundation
 import Combine
 
 /// Manages the long-lived Pub/Sub API subscription to OpportunityChangeEvent
-/// TODO: Full gRPC implementation - currently stubbed for UI development
+///
+/// IMPLEMENTATION STATUS: Ready for gRPC integration
+///
+/// This manager is structured to handle real-time CDC events via bidirectional streaming.
+/// The gRPC client code has been generated in `Realtime/Generated/pubsub_api.grpc.swift`.
+///
+/// TO COMPLETE:
+/// 1. Add pubsub_api.grpc.swift to Xcode project
+/// 2. Create HTTP/2 transport: HTTP2ClientTransport.Posix(target: .hostAndPort("api.pubsub.salesforce.com", 7443))
+/// 3. Initialize client: Eventbus_V1_PubSub.Client(wrapping: GRPCClient(transport: transport))
+/// 4. Call client.getTopic() to get schema ID
+/// 5. Call client.getSchema() to fetch Avro schema
+/// 6. Call client.subscribe() with bidirectional streaming:
+///    - Send FetchRequest messages with topicName and numRequested
+///    - Receive FetchResponse messages with events
+///    - Decode Avro payloads using SwiftAvroCore
+///    - Call onEventReceived callback
+/// 7. Implement exponential backoff retry on disconnection
+///
+/// See PUBSUB_GUIDE.md for complete protocol details.
+/// See SWIFT_SALESFORCE_PUBSUB.md lines 280-395 for Swift examples.
+///
 @MainActor
 class PubSubSubscriptionManager: ObservableObject {
     static let shared = PubSubSubscriptionManager()
@@ -43,10 +64,11 @@ class PubSubSubscriptionManager: ObservableObject {
     
     /// Connect to the Pub/Sub API and start receiving events
     func connect() {
-        print("🔌 PubSubSubscriptionManager: Connecting... (stubbed)")
+        print("🔌 PubSubSubscriptionManager: Connecting... (stub implementation)")
+        print("   See IMPLEMENTATION_STATUS.md Phase 7 for gRPC integration steps")
         connectionStatus = .connecting
         
-        // TODO: Implement actual gRPC connection
+        // TODO: Implement actual gRPC connection with generated client
         // For now, simulate connection
         Task {
             try? await Task.sleep(nanoseconds: 2_000_000_000)
@@ -54,6 +76,7 @@ class PubSubSubscriptionManager: ObservableObject {
                 connectionStatus = .connected
                 lastUpdateTime = Date()
             }
+            print("✅ PubSubSubscriptionManager: Simulated connection (awaiting gRPC implementation)")
         }
     }
     

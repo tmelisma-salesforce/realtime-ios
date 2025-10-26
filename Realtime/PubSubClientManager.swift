@@ -26,14 +26,30 @@ import Foundation
 import GRPCCore
 import GRPCNIOTransportHTTP2
 
-/// Manages schema caching for Salesforce Pub/Sub API
+/// Manages gRPC client connection and schema caching for Salesforce Pub/Sub API
+///
+/// NOTE: This implementation is structured for grpc-swift-2 integration.
+/// The generated client code exists in `Realtime/Generated/pubsub_api.grpc.swift`.
+/// Full gRPC implementation requires:
+/// 1. Add pubsub_api.grpc.swift to Xcode project target
+/// 2. Use Eventbus_V1_PubSub.Client<Transport> for RPC calls
+/// 3. Configure HTTP/2 transport with TLS to api.pubsub.salesforce.com:7443
+/// 4. Implement auth interceptor for metadata headers
+///
+/// See IMPLEMENTATION_STATUS.md Phase 7 for complete integration guide.
 @MainActor
 class PubSubClientManager {
     static let shared = PubSubClientManager()
     
     private var schemaCache: [String: String] = [:]
     
+    // Salesforce Pub/Sub API endpoint
+    private let pubSubHost = "api.pubsub.salesforce.com"
+    private let pubSubPort = 7443
+    
     private init() {}
+    
+    // MARK: - Schema Cache Management
     
     /// Get Avro schema by schema ID, using cache when possible
     func getSchema(schemaId: String) -> String? {
@@ -59,19 +75,28 @@ class PubSubClientManager {
 }
 
 /// Custom gRPC errors
-enum GRPCError: Error, LocalizedError {
-    case AuthenticationFailed
-    case SchemaNotFound
-    case ConnectionFailed
+enum PubSubError: Error, LocalizedError {
+    case authenticationFailed
+    case schemaNotFound
+    case connectionFailed
+    case clientNotInitialized
+    case invalidResponse
+    case avroDecodingFailed(String)
     
     var errorDescription: String? {
         switch self {
-        case .AuthenticationFailed:
+        case .authenticationFailed:
             return "Failed to authenticate with Salesforce Pub/Sub API. Please ensure you are logged in."
-        case .SchemaNotFound:
+        case .schemaNotFound:
             return "Schema not found for the requested ID."
-        case .ConnectionFailed:
+        case .connectionFailed:
             return "Failed to connect to Salesforce Pub/Sub API."
+        case .clientNotInitialized:
+            return "gRPC client not initialized."
+        case .invalidResponse:
+            return "Invalid response from server."
+        case .avroDecodingFailed(let detail):
+            return "Failed to decode Avro payload: \(detail)"
         }
     }
 }
