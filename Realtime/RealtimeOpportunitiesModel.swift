@@ -28,6 +28,7 @@ import Combine
 import SalesforceSDKCore
 
 /// View model for the realtime opportunities list with CDC event handling
+@available(iOS 18.0, *)
 @MainActor
 class RealtimeOpportunitiesModel: ObservableObject {
     @Published var opportunities: [Opportunity] = []

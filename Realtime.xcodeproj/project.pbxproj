@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -62,6 +62,10 @@
 		D33B883F2CA60F0E00892D80 /* LoginTypeSelectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginTypeSelectionViewController.swift; sourceTree = "<group>"; };
 		D33B88402CA60F0E00892D80 /* QrCodeScanController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QrCodeScanController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A0ABC6EA2EADE26700B60431 /* Generated */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Generated; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		4FD6C4711B754AF1002F9F90 /* Frameworks */ = {
@@ -129,6 +133,7 @@
 		4FD6C4761B754AF1002F9F90 /* Realtime */ = {
 			isa = PBXGroup;
 			children = (
+				A0ABC6EA2EADE26700B60431 /* Generated */,
 				A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */,
 				A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */,
 				A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */,
@@ -192,6 +197,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A0ABC6EA2EADE26700B60431 /* Generated */,
 			);
 			name = Realtime;
 			productName = Realtime;
@@ -288,9 +296,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

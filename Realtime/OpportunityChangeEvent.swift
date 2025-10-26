@@ -26,7 +26,7 @@ import Foundation
 
 /// Represents the Change Data Capture event payload for Opportunity changes
 /// CDC events include ALL schema fields, but only changed fields have non-null values
-struct OpportunityChangeEventPayload: Decodable {
+struct OpportunityChangeEventPayload: Codable {
     let ChangeEventHeader: ChangeEventHeader
     
     // Opportunity fields - all optional because CDC only includes changed fields
@@ -66,7 +66,7 @@ struct OpportunityChangeEventPayload: Decodable {
 }
 
 /// Change Data Capture event header containing metadata about the change
-struct ChangeEventHeader: Decodable {
+struct ChangeEventHeader: Codable {
     let entityName: String
     let recordIds: [String]
     let changeType: String  // UPDATE, CREATE, DELETE, UNDELETE

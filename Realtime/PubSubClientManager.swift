@@ -25,22 +25,16 @@ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
 import Foundation
 import GRPCCore
 import GRPCNIOTransportHTTP2
+import GRPCProtobuf
 
-/// Manages gRPC client connection and schema caching for Salesforce Pub/Sub API
-///
-/// NOTE: This implementation is structured for grpc-swift-2 integration.
-/// The generated client code exists in `Realtime/Generated/pubsub_api.grpc.swift`.
-/// Full gRPC implementation requires:
-/// 1. Add pubsub_api.grpc.swift to Xcode project target
-/// 2. Use Eventbus_V1_PubSub.Client<Transport> for RPC calls
-/// 3. Configure HTTP/2 transport with TLS to api.pubsub.salesforce.com:7443
-/// 4. Implement auth interceptor for metadata headers
-///
-/// See IMPLEMENTATION_STATUS.md Phase 7 for complete integration guide.
+/// Manages gRPC client connection and RPC calls to Salesforce Pub/Sub API
+@available(iOS 18.0, *)
 @MainActor
 class PubSubClientManager {
     static let shared = PubSubClientManager()
     
+    private var grpcClient: GRPCClient<HTTP2ClientTransport.Posix>?
+    private var pubsubClient: Eventbus_V1_PubSub.Client<HTTP2ClientTransport.Posix>?
     private var schemaCache: [String: String] = [:]
     
     // Salesforce Pub/Sub API endpoint
@@ -49,17 +43,107 @@ class PubSubClientManager {
     
     private init() {}
     
-    // MARK: - Schema Cache Management
+    // MARK: - Client Setup
     
-    /// Get Avro schema by schema ID, using cache when possible
-    func getSchema(schemaId: String) -> String? {
-        return schemaCache[schemaId]
+    /// Initialize the gRPC client with authentication
+    func setupClient() async throws {
+        guard let credentials = SalesforcePubSubAuth.shared.credentials else {
+            throw PubSubError.authenticationFailed
+        }
+        
+        print("🔧 PubSubClientManager: Setting up gRPC client")
+        print("   Instance: \(credentials.instanceURL)")
+        print("   Tenant: \(credentials.tenantID)")
+        
+        // Create HTTP/2 transport with TLS
+        let transport = try HTTP2ClientTransport.Posix(
+            target: .dns(host: pubSubHost, port: pubSubPort),
+            transportSecurity: .tls
+        )
+        
+        // Create gRPC client with auth interceptor
+        let client = GRPCClient(
+            transport: transport,
+            interceptors: [AuthInterceptor(credentials: credentials)]
+        )
+        
+        grpcClient = client
+        
+        // Create Pub/Sub API client using generated code
+        pubsubClient = Eventbus_V1_PubSub.Client(wrapping: client)
+        
+        print("✅ PubSubClientManager: gRPC client initialized")
     }
     
-    /// Cache a schema
-    func cacheSchema(schemaId: String, schemaJSON: String) {
+    /// Get the Pub/Sub API client, initializing if needed
+    func getClient() async throws -> Eventbus_V1_PubSub.Client<HTTP2ClientTransport.Posix> {
+        if let client = pubsubClient {
+            return client
+        }
+        
+        try await setupClient()
+        
+        guard let client = pubsubClient else {
+            throw PubSubError.clientNotInitialized
+        }
+        
+        return client
+    }
+    
+    // MARK: - RPC Methods
+    
+    /// Get topic information including schema ID
+    func getTopic(topicName: String) async throws -> Eventbus_V1_TopicInfo {
+        print("📡 PubSubClientManager: Getting topic info for \(topicName)")
+        
+        let client = try await getClient()
+        
+        // Create request
+        var request = Eventbus_V1_TopicRequest()
+        request.topicName = topicName
+        
+        // Make unary RPC call using generated convenience method
+        let topicInfo = try await client.getTopic(request)
+        
+        print("✅ PubSubClientManager: Topic info received")
+        print("   Schema ID: \(topicInfo.schemaID)")
+        print("   Can Subscribe: \(topicInfo.canSubscribe)")
+        
+        return topicInfo
+    }
+    
+    /// Get Avro schema by schema ID (with caching)
+    func getSchemaInfo(schemaId: String) async throws -> String {
+        // Check cache first
+        if let cached = schemaCache[schemaId] {
+            print("💾 PubSubClientManager: Using cached schema for \(schemaId)")
+            return cached
+        }
+        
+        print("📡 PubSubClientManager: Fetching schema from server for \(schemaId)")
+        
+        let client = try await getClient()
+        
+        // Create request
+        var request = Eventbus_V1_SchemaRequest()
+        request.schemaID = schemaId
+        
+        // Make unary RPC call using generated convenience method
+        let schemaInfo = try await client.getSchema(request)
+        let schemaJSON = schemaInfo.schemaJson
+        
+        // Cache it
         schemaCache[schemaId] = schemaJSON
-        print("💾 PubSubClientManager: Cached schema for \(schemaId) (length: \(schemaJSON.count))")
+        print("✅ PubSubClientManager: Schema fetched and cached (\(schemaJSON.count) bytes)")
+        
+        return schemaJSON
+    }
+    
+    // MARK: - Schema Cache Management
+    
+    /// Get cached schema (returns nil if not cached)
+    func getCachedSchema(schemaId: String) -> String? {
+        return schemaCache[schemaId]
     }
     
     /// Check if schema is cached
@@ -72,9 +156,43 @@ class PubSubClientManager {
         schemaCache.removeAll()
         print("🗑️ PubSubClientManager: Schema cache cleared")
     }
+    
+    /// Shutdown the gRPC client
+    func shutdown() async {
+        print("🔌 PubSubClientManager: Shutting down gRPC client")
+        grpcClient = nil
+        pubsubClient = nil
+    }
 }
 
-/// Custom gRPC errors
+// MARK: - Auth Interceptor
+
+/// Injects Salesforce authentication headers into every gRPC request
+@available(iOS 18.0, *)
+private struct AuthInterceptor: ClientInterceptor {
+    let credentials: (accessToken: String, instanceURL: String, tenantID: String)
+    
+    func intercept<Input: Sendable, Output: Sendable>(
+        request: StreamingClientRequest<Input>,
+        context: ClientContext,
+        next: @Sendable (StreamingClientRequest<Input>, ClientContext) async throws -> StreamingClientResponse<Output>
+    ) async throws -> StreamingClientResponse<Output> {
+        // Add authentication headers
+        var metadata = request.metadata
+        metadata.addString(credentials.accessToken, forKey: "accesstoken")
+        metadata.addString(credentials.instanceURL, forKey: "instanceurl")
+        metadata.addString(credentials.tenantID, forKey: "tenantid")
+        
+        var modifiedRequest = request
+        modifiedRequest.metadata = metadata
+        
+        // Forward to next interceptor/transport
+        return try await next(modifiedRequest, context)
+    }
+}
+
+// MARK: - Custom Errors
+
 enum PubSubError: Error, LocalizedError {
     case authenticationFailed
     case schemaNotFound

@@ -34,14 +34,22 @@ struct MainTabView: View {
                     Label("Traditional", systemImage: "list.bullet")
                 }
             
-            RealtimeView()
-                .tabItem {
-                    Label("Realtime", systemImage: "bolt.fill")
-                }
+            if #available(iOS 18.0, *) {
+                RealtimeView()
+                    .tabItem {
+                        Label("Realtime", systemImage: "bolt.fill")
+                    }
+            } else {
+                Text("Realtime features require iOS 18.0 or later")
+                    .tabItem {
+                        Label("Realtime", systemImage: "bolt.fill")
+                    }
+            }
         }
     }
 }
 
+@available(iOS 18.0, *)
 struct RealtimeView: View {
     @StateObject private var viewModel = RealtimeOpportunitiesModel()
     
