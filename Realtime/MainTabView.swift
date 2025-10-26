@@ -44,7 +44,6 @@ struct MainTabView: View {
 
 struct RealtimeView: View {
     @StateObject private var viewModel = RealtimeOpportunitiesModel()
-    @State private var isPulsing = false
     
     var body: some View {
         NavigationView {
@@ -59,7 +58,7 @@ struct RealtimeView: View {
                 // Opportunities list
                 List {
                     ForEach(viewModel.opportunities) { opportunity in
-                        OpportunityRowView(opportunity: opportunity, isPulsing: $isPulsing)
+                        OpportunityRowView(opportunity: opportunity)
                     }
                 }
                 .listStyle(.plain)
@@ -68,10 +67,6 @@ struct RealtimeView: View {
             .navigationBarTitle(Text("Realtime"), displayMode: .inline)
             .onAppear {
                 viewModel.initialize()
-                // Start pulsing animation
-                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                    isPulsing = true
-                }
             }
         }
     }
@@ -80,15 +75,13 @@ struct RealtimeView: View {
 /// Row view for a single opportunity with field highlighting
 struct OpportunityRowView: View {
     let opportunity: Opportunity
-    @Binding var isPulsing: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             // Name
             HighlightableText(
                 text: opportunity.Name,
-                isChanged: opportunity.changedFields.contains("Name"),
-                isPulsing: isPulsing
+                isChanged: opportunity.changedFields.contains("Name")
             )
             .font(.headline)
             
@@ -107,8 +100,7 @@ struct OpportunityRowView: View {
                     Text("•")
                     HighlightableText(
                         text: stageName,
-                        isChanged: opportunity.changedFields.contains("StageName"),
-                        isPulsing: isPulsing
+                        isChanged: opportunity.changedFields.contains("StageName")
                     )
                     .font(.subheadline)
                 }
@@ -119,8 +111,7 @@ struct OpportunityRowView: View {
                 if let amount = opportunity.Amount {
                     HighlightableText(
                         text: String(format: "$%.2f", amount),
-                        isChanged: opportunity.changedFields.contains("Amount"),
-                        isPulsing: isPulsing
+                        isChanged: opportunity.changedFields.contains("Amount")
                     )
                     .font(.subheadline)
                 }
@@ -132,8 +123,7 @@ struct OpportunityRowView: View {
                     }
                     HighlightableText(
                         text: closeDate,
-                        isChanged: opportunity.changedFields.contains("CloseDate"),
-                        isPulsing: isPulsing
+                        isChanged: opportunity.changedFields.contains("CloseDate")
                     )
                     .font(.subheadline)
                 }
@@ -147,7 +137,8 @@ struct OpportunityRowView: View {
 struct HighlightableText: View {
     let text: String
     let isChanged: Bool
-    let isPulsing: Bool
+    
+    @State private var pulseOpacity: Double = 0.6
     
     var body: some View {
         Text(text)
@@ -156,9 +147,16 @@ struct HighlightableText: View {
             .background(
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color.blue.opacity(isChanged ? 0.2 : 0))
-                    .opacity(isPulsing && isChanged ? 0.3 : 0.6)
+                    .opacity(isChanged ? pulseOpacity : 0)
             )
-            .animation(.easeInOut(duration: 2), value: isPulsing)
+            .onAppear {
+                // Start continuous pulsing animation for changed fields
+                if isChanged {
+                    withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                        pulseOpacity = 0.3
+                    }
+                }
+            }
     }
 }
 

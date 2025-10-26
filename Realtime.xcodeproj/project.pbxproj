@@ -19,7 +19,6 @@
 		A0ABC6D12EADBF2600B60431 /* SwiftAvroCore in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D02EADBF2600B60431 /* SwiftAvroCore */; };
 		A0ABC6D42EADC19600B60431 /* GRPCNIOTransportHTTP2 in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D32EADC19600B60431 /* GRPCNIOTransportHTTP2 */; };
 		A0ABC6D72EADC1C100B60431 /* GRPCProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D62EADC1C100B60431 /* GRPCProtobuf */; };
-		A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */; };
 		A0ABC6E12EADC82900B60431 /* OpportunityChangeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */; };
 		A0ABC6E22EADC82900B60431 /* ConnectionStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */; };
 		A0ABC6E32EADC82900B60431 /* PubSubClientManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */; };
@@ -48,7 +47,6 @@
 		4FD6C49D1B755242002F9F90 /* InitialViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Realtime.entitlements; sourceTree = "<group>"; };
 		69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pubsub_api.pb.swift; sourceTree = "<group>"; };
 		A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStatusView.swift; sourceTree = "<group>"; };
 		A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpportunityChangeEvent.swift; sourceTree = "<group>"; };
 		A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PubSubClientManager.swift; sourceTree = "<group>"; };
@@ -139,7 +137,6 @@
 				A0ABC6DF2EADC82900B60431 /* RealtimeOpportunitiesModel.swift */,
 				A0ABC6E02EADC82900B60431 /* SalesforcePubSubAuth.swift */,
 				4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */,
-				A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */,
 				4FD6C4A11B755265002F9F90 /* Classes */,
 				4FD6C4771B754AF1002F9F90 /* Supporting Files */,
 			);
@@ -321,7 +318,6 @@
 				A0ABC6E72EADC82900B60431 /* SalesforcePubSubAuth.swift in Sources */,
 				4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */,
 				4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */,
-				A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */,
 				4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -176,6 +176,13 @@ class RealtimeOpportunitiesModel: ObservableObject {
     private func handleCreate(recordId: String, event: OpportunityChangeEventPayload) {
         print("✨ RealtimeOpportunitiesModel: CREATE event for \(recordId)")
         
+        // Check if opportunity already exists (edge case: duplicate CREATE events)
+        if opportunityMap[recordId] != nil {
+            print("⚠️ RealtimeOpportunitiesModel: Opportunity already exists, treating as UPDATE")
+            handleUpdate(recordId: recordId, event: event)
+            return
+        }
+        
         // For CREATE events, fetch the full opportunity via REST API
         // (CDC may not include all fields like Account.Name)
         let request = RestClient.shared.request(
@@ -193,10 +200,18 @@ class RealtimeOpportunitiesModel: ObservableObject {
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
                         print("❌ RealtimeOpportunitiesModel: Failed to fetch new opportunity - \(error)")
+                        // TODO (Phase 8): Add retry logic with exponential backoff
+                        // TODO (Phase 8): Consider showing error state in UI or background retry
+                        // For now, the opportunity will not appear until a manual refresh
                     }
                 },
                 receiveValue: { [weak self] response in
-                    guard let self = self, let newOpp = response.records.first else { return }
+                    guard let self = self else { return }
+                    
+                    guard let newOpp = response.records.first else {
+                        print("⚠️ RealtimeOpportunitiesModel: No opportunity found in CREATE response (may have been deleted)")
+                        return
+                    }
                     
                     var opportunity = newOpp
                     opportunity.changedFields = Set(["Name", "StageName", "Amount", "CloseDate"]) // All fields are new
