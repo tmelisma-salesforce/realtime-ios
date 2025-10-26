@@ -26,109 +26,35 @@ import Foundation
 import GRPCCore
 import GRPCNIOTransportHTTP2
 
-/// Manages the shared gRPC client for Salesforce Pub/Sub API with authentication and schema caching
+/// Manages schema caching for Salesforce Pub/Sub API
 @MainActor
 class PubSubClientManager {
     static let shared = PubSubClientManager()
     
-    private var grpcClient: GRPCClient?
     private var schemaCache: [String: String] = [:]
     
     private init() {}
     
-    /// Get or create the shared gRPC client instance
-    func getClient() throws -> GRPCClient {
-        if let existingClient = grpcClient {
-            return existingClient
-        }
-        
-        // Create new client with HTTP/2 transport
-        let client = GRPCClient(
-            transport: try .http2NIOPosix(
-                target: .dns(host: "api.pubsub.salesforce.com", port: 443),
-                config: .defaults(transportSecurity: .tls)
-            ),
-            interceptors: [SalesforcePubSubAuthInterceptor()]
-        )
-        
-        grpcClient = client
-        return client
+    /// Get Avro schema by schema ID, using cache when possible
+    func getSchema(schemaId: String) -> String? {
+        return schemaCache[schemaId]
     }
     
-    /// Get Avro schema by schema ID, using cache when possible
-    func getSchema(schemaId: String) async throws -> String {
-        // Check cache first (critical for performance - 1.2s without cache vs 0.01s with cache)
-        if let cachedSchema = schemaCache[schemaId] {
-            print("📦 PubSubClientManager: Schema cache HIT for \(schemaId)")
-            return cachedSchema
-        }
-        
-        print("🔍 PubSubClientManager: Schema cache MISS for \(schemaId), fetching from server...")
-        
-        // Fetch from server
-        let client = try getClient()
-        
-        var schemaRequest = Eventbus_V1_SchemaRequest()
-        schemaRequest.schemaID = schemaId
-        
-        let response = try await client.unary(
-            request: ClientRequest.Single(
-                message: schemaRequest,
-                metadata: [:]
-            ),
-            descriptor: MethodDescriptor(service: "eventbus.v1.PubSub", method: "GetSchema"),
-            serializer: ProtobufSerializer<Eventbus_V1_SchemaRequest>(),
-            deserializer: ProtobufDeserializer<Eventbus_V1_SchemaInfo>()
-        )
-        
-        let schemaInfo = try response.message
-        let schemaJSON = schemaInfo.schemaJSON
-        
-        // Cache for future use
+    /// Cache a schema
+    func cacheSchema(schemaId: String, schemaJSON: String) {
         schemaCache[schemaId] = schemaJSON
         print("💾 PubSubClientManager: Cached schema for \(schemaId) (length: \(schemaJSON.count))")
-        
-        return schemaJSON
     }
     
-    /// Clear the schema cache (useful for testing or memory management)
+    /// Check if schema is cached
+    func hasSchema(schemaId: String) -> Bool {
+        return schemaCache[schemaId] != nil
+    }
+    
+    /// Clear the schema cache
     func clearSchemaCache() {
         schemaCache.removeAll()
         print("🗑️ PubSubClientManager: Schema cache cleared")
-    }
-    
-    /// Close the gRPC client connection
-    func closeClient() async {
-        if let client = grpcClient {
-            await client.run()
-            grpcClient = nil
-            print("🔌 PubSubClientManager: gRPC client closed")
-        }
-    }
-}
-
-/// Interceptor to inject Salesforce authentication headers into every gRPC request
-struct SalesforcePubSubAuthInterceptor: ClientInterceptor {
-    func intercept<Input: Sendable, Output: Sendable>(
-        request: ClientRequest<Input>,
-        context: ClientContext,
-        next: @Sendable (ClientRequest<Input>, ClientContext) async throws -> ClientResponse<Output>
-    ) async throws -> ClientResponse<Output> {
-        var modifiedRequest = request
-        
-        // Get credentials from auth manager
-        guard let credentials = SalesforcePubSubAuth.shared.credentials else {
-            print("❌ SalesforcePubSubAuthInterceptor: No valid credentials available")
-            throw GRPCError.AuthenticationFailed
-        }
-        
-        // Add required Salesforce Pub/Sub API headers
-        modifiedRequest.metadata["accesstoken"] = credentials.accessToken
-        modifiedRequest.metadata["instanceurl"] = credentials.instanceURL
-        modifiedRequest.metadata["tenantid"] = credentials.tenantID
-        
-        // Call next interceptor or final handler
-        return try await next(modifiedRequest, context)
     }
 }
 
@@ -149,18 +75,3 @@ enum GRPCError: Error, LocalizedError {
         }
     }
 }
-
-/// Protocol Buffer serializer
-struct ProtobufSerializer<Message: SwiftProtobuf.Message>: MessageSerializer {
-    func serialize(_ message: Message) throws -> [UInt8] {
-        return try Array(message.serializedData())
-    }
-}
-
-/// Protocol Buffer deserializer
-struct ProtobufDeserializer<Message: SwiftProtobuf.Message>: MessageDeserializer {
-    func deserialize(_ serializedMessageBytes: [UInt8]) throws -> Message {
-        return try Message(serializedData: Data(serializedMessageBytes))
-    }
-}
-

@@ -20,6 +20,13 @@
 		A0ABC6D42EADC19600B60431 /* GRPCNIOTransportHTTP2 in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D32EADC19600B60431 /* GRPCNIOTransportHTTP2 */; };
 		A0ABC6D72EADC1C100B60431 /* GRPCProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D62EADC1C100B60431 /* GRPCProtobuf */; };
 		A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */; };
+		A0ABC6E12EADC82900B60431 /* OpportunityChangeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */; };
+		A0ABC6E22EADC82900B60431 /* ConnectionStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */; };
+		A0ABC6E32EADC82900B60431 /* PubSubClientManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */; };
+		A0ABC6E42EADC82900B60431 /* PubSubSubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DE2EADC82900B60431 /* PubSubSubscriptionManager.swift */; };
+		A0ABC6E52EADC82900B60431 /* PubSubConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DD2EADC82900B60431 /* PubSubConnectionStatus.swift */; };
+		A0ABC6E62EADC82900B60431 /* RealtimeOpportunitiesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6DF2EADC82900B60431 /* RealtimeOpportunitiesModel.swift */; };
+		A0ABC6E72EADC82900B60431 /* SalesforcePubSubAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6E02EADC82900B60431 /* SalesforcePubSubAuth.swift */; };
 		B7168FBC1FACC6F900A48DB5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7168FBB1FACC6F900A48DB5 /* LaunchScreen.storyboard */; };
 		B73B520D234FA65F001B069B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73B520C234FA65F001B069B /* SceneDelegate.swift */; };
 		B77BD8A321125B510036B284 /* bootconfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = B77BD8A221125B510036B284 /* bootconfig.plist */; };
@@ -42,6 +49,13 @@
 		4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Realtime.entitlements; sourceTree = "<group>"; };
 		69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pubsub_api.pb.swift; sourceTree = "<group>"; };
+		A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStatusView.swift; sourceTree = "<group>"; };
+		A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpportunityChangeEvent.swift; sourceTree = "<group>"; };
+		A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PubSubClientManager.swift; sourceTree = "<group>"; };
+		A0ABC6DD2EADC82900B60431 /* PubSubConnectionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PubSubConnectionStatus.swift; sourceTree = "<group>"; };
+		A0ABC6DE2EADC82900B60431 /* PubSubSubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PubSubSubscriptionManager.swift; sourceTree = "<group>"; };
+		A0ABC6DF2EADC82900B60431 /* RealtimeOpportunitiesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeOpportunitiesModel.swift; sourceTree = "<group>"; };
+		A0ABC6E02EADC82900B60431 /* SalesforcePubSubAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesforcePubSubAuth.swift; sourceTree = "<group>"; };
 		B1330ABB1CD7D91761A89F96 /* Pods-Realtime.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Realtime.release.xcconfig"; path = "Target Support Files/Pods-Realtime/Pods-Realtime.release.xcconfig"; sourceTree = "<group>"; };
 		B7168FBB1FACC6F900A48DB5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "../mobile_sdk/SalesforceMobileSDK-iOS/shared/resources/LaunchScreen.storyboard"; sourceTree = "<group>"; };
 		B73B520C234FA65F001B069B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -117,6 +131,13 @@
 		4FD6C4761B754AF1002F9F90 /* Realtime */ = {
 			isa = PBXGroup;
 			children = (
+				A0ABC6DA2EADC82900B60431 /* ConnectionStatusView.swift */,
+				A0ABC6DB2EADC82900B60431 /* OpportunityChangeEvent.swift */,
+				A0ABC6DC2EADC82900B60431 /* PubSubClientManager.swift */,
+				A0ABC6DD2EADC82900B60431 /* PubSubConnectionStatus.swift */,
+				A0ABC6DE2EADC82900B60431 /* PubSubSubscriptionManager.swift */,
+				A0ABC6DF2EADC82900B60431 /* RealtimeOpportunitiesModel.swift */,
+				A0ABC6E02EADC82900B60431 /* SalesforcePubSubAuth.swift */,
 				4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */,
 				A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */,
 				4FD6C4A11B755265002F9F90 /* Classes */,
@@ -270,13 +291,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -295,6 +312,13 @@
 				4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */,
 				D33B88412CA60F0E00892D80 /* LoginTypeSelectionViewController.swift in Sources */,
 				4F13E952237DD800005BCAE9 /* MainTabView.swift in Sources */,
+				A0ABC6E12EADC82900B60431 /* OpportunityChangeEvent.swift in Sources */,
+				A0ABC6E22EADC82900B60431 /* ConnectionStatusView.swift in Sources */,
+				A0ABC6E32EADC82900B60431 /* PubSubClientManager.swift in Sources */,
+				A0ABC6E42EADC82900B60431 /* PubSubSubscriptionManager.swift in Sources */,
+				A0ABC6E52EADC82900B60431 /* PubSubConnectionStatus.swift in Sources */,
+				A0ABC6E62EADC82900B60431 /* RealtimeOpportunitiesModel.swift in Sources */,
+				A0ABC6E72EADC82900B60431 /* SalesforcePubSubAuth.swift in Sources */,
 				4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */,
 				4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */,
 				A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */,

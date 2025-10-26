@@ -39,6 +39,7 @@ class RealtimeOpportunitiesModel: ObservableObject {
     private var opportunitiesCancellable: AnyCancellable?
     private var statusCancellable: AnyCancellable?
     private var lastUpdateCancellable: AnyCancellable?
+    private var cancellables = Set<AnyCancellable>()
     
     /// Initialize the view model and start receiving events
     func initialize() {
@@ -210,7 +211,7 @@ class RealtimeOpportunitiesModel: ObservableObject {
                     print("✅ RealtimeOpportunitiesModel: New opportunity added to top")
                 }
             )
-            .store(in: &Set<AnyCancellable>())
+            .store(in: &cancellables)
     }
     
     /// Handle DELETE event

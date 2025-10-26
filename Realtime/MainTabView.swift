@@ -43,16 +43,122 @@ struct MainTabView: View {
 }
 
 struct RealtimeView: View {
+    @StateObject private var viewModel = RealtimeOpportunitiesModel()
+    @State private var isPulsing = false
+    
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Realtime View")
-                    .font(.title)
-                Text("Coming soon...")
-                    .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                // Status indicator at top
+                ConnectionStatusView(
+                    status: viewModel.connectionStatus,
+                    lastUpdateTime: viewModel.lastUpdateTime
+                )
+                .padding(.vertical, 8)
+                
+                // Opportunities list
+                List {
+                    ForEach(viewModel.opportunities) { opportunity in
+                        OpportunityRowView(opportunity: opportunity, isPulsing: $isPulsing)
+                    }
+                }
+                .listStyle(.plain)
+                .animation(.spring(), value: viewModel.opportunities)
             }
             .navigationBarTitle(Text("Realtime"), displayMode: .inline)
+            .onAppear {
+                viewModel.initialize()
+                // Start pulsing animation
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    isPulsing = true
+                }
+            }
         }
+    }
+}
+
+/// Row view for a single opportunity with field highlighting
+struct OpportunityRowView: View {
+    let opportunity: Opportunity
+    @Binding var isPulsing: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            // Name
+            HighlightableText(
+                text: opportunity.Name,
+                isChanged: opportunity.changedFields.contains("Name"),
+                isPulsing: isPulsing
+            )
+            .font(.headline)
+            
+            HStack(spacing: 10) {
+                // Account Name
+                if let accountName = opportunity.Account?.Name {
+                    Text(accountName)
+                        .font(.subheadline)
+                } else {
+                    Text("No Account")
+                        .font(.subheadline)
+                }
+                
+                // Stage Name
+                if let stageName = opportunity.StageName {
+                    Text("•")
+                    HighlightableText(
+                        text: stageName,
+                        isChanged: opportunity.changedFields.contains("StageName"),
+                        isPulsing: isPulsing
+                    )
+                    .font(.subheadline)
+                }
+            }
+            
+            HStack(spacing: 10) {
+                // Amount
+                if let amount = opportunity.Amount {
+                    HighlightableText(
+                        text: String(format: "$%.2f", amount),
+                        isChanged: opportunity.changedFields.contains("Amount"),
+                        isPulsing: isPulsing
+                    )
+                    .font(.subheadline)
+                }
+                
+                // Close Date
+                if let closeDate = opportunity.CloseDate {
+                    if opportunity.Amount != nil {
+                        Text("•")
+                    }
+                    HighlightableText(
+                        text: closeDate,
+                        isChanged: opportunity.changedFields.contains("CloseDate"),
+                        isPulsing: isPulsing
+                    )
+                    .font(.subheadline)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+/// Text view with permanent pulsing highlight for changed fields
+struct HighlightableText: View {
+    let text: String
+    let isChanged: Bool
+    let isPulsing: Bool
+    
+    var body: some View {
+        Text(text)
+            .padding(.horizontal, isChanged ? 6 : 0)
+            .padding(.vertical, isChanged ? 2 : 0)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.blue.opacity(isChanged ? 0.2 : 0))
+                    .opacity(isPulsing && isChanged ? 0.3 : 0.6)
+            )
+            .animation(.easeInOut(duration: 2), value: isPulsing)
     }
 }
 

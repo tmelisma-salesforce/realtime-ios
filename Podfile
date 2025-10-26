@@ -1,6 +1,6 @@
 require_relative './mobile_sdk/SalesforceMobileSDK-iOS/mobilesdk_pods'
 
-platform :ios, '17.0'
+platform :ios, '18.0'
 
 project 'Realtime.xcodeproj'
 target 'Realtime' do
