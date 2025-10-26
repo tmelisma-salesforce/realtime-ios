@@ -24,34 +24,51 @@ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
 
 
 import Foundation
-import SwiftUI
-import Combine
 import SalesforceSDKCore
+import Combine
 
-struct AccountsListView: View {
-  @ObservedObject var viewModel = AccountsListModel()
-  
-  var body: some View {
-    NavigationView {
-      List(viewModel.accounts) { dataItem in
-        NavigationLink(destination: ContactsForAccountListView(account: dataItem)){
-          HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
-              Text(dataItem.name)
-              Text(dataItem.industry).font(.subheadline).italic()
-            }
-          }
-        }
-      }
-      .navigationBarTitle(Text("Accounts"), displayMode: .inline)
+struct Opportunity: Identifiable, Decodable {
+    var id: String { Id }
+    let Id: String
+    let Name: String
+    let Amount: Double?
+    let StageName: String?
+    let CloseDate: String?
+    let Account: AccountRelation?
+    
+    struct AccountRelation: Decodable {
+        let Name: String?
     }
-    .onAppear{ self.viewModel.fetchAccounts() }
-  }
 }
 
-struct AccountsList_Previews: PreviewProvider {
-  static var previews: some View {
-    AccountsListView()
-  }
+struct OpportunityResponse: Decodable {
+    var totalSize: Int
+    var done: Bool
+    var records: [Opportunity]
+}
+
+
+class OpportunitiesListModel: ObservableObject {
+    @Published var opportunities: [Opportunity] = []
+    
+    private var opportunitiesCancellable: AnyCancellable?
+    
+    func fetchOpportunities() {
+        let request = RestClient.shared.request(forQuery: "SELECT Id, Name, StageName, Amount, CloseDate, Account.Name FROM Opportunity ORDER BY CloseDate DESC LIMIT 100", apiVersion: nil)
+        
+        opportunitiesCancellable = RestClient.shared.publisher(for: request)
+            .receive(on: RunLoop.main)
+            .tryMap({ (response) -> Data in
+                response.asData()
+            })
+            .decode(type: OpportunityResponse.self, decoder: JSONDecoder())
+            .map({ (record) -> [Opportunity] in
+                record.records
+            })
+            .catch( { error in
+                Just([])
+            })
+            .assign(to: \.opportunities, on: self)        
+    }
 }
 

@@ -7,14 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4F13E93B237DD5D9005BCAE9 /* ContactDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E936237DD5D9005BCAE9 /* ContactDetailsView.swift */; };
-		4F13E93C237DD5D9005BCAE9 /* ContactsForAccountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E937237DD5D9005BCAE9 /* ContactsForAccountModel.swift */; };
-		4F13E93D237DD5D9005BCAE9 /* ContactsForAccountListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E938237DD5D9005BCAE9 /* ContactsForAccountListView.swift */; };
-		4F13E93E237DD5D9005BCAE9 /* AccountsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E939237DD5D9005BCAE9 /* AccountsListView.swift */; };
-		4F13E93F237DD5D9005BCAE9 /* ContactDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E93A237DD5D9005BCAE9 /* ContactDetailModel.swift */; };
-		4F13E942237DD5EE005BCAE9 /* usersyncs.json in Resources */ = {isa = PBXBuildFile; fileRef = 4F13E940237DD5EE005BCAE9 /* usersyncs.json */; };
-		4F13E943237DD5EE005BCAE9 /* userstore.json in Resources */ = {isa = PBXBuildFile; fileRef = 4F13E941237DD5EE005BCAE9 /* userstore.json */; };
-		4F13E947237DD72E005BCAE9 /* AccountsListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E946237DD72E005BCAE9 /* AccountsListModel.swift */; };
+		4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */; };
+		4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F13E94F237DD7FF005BCAE9 /* OpportunitiesListModel.swift */; };
 		4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C4791B754AF1002F9F90 /* AppDelegate.swift */; };
 		4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C49D1B755242002F9F90 /* InitialViewController.swift */; };
 		69B48C322AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */; };
@@ -30,14 +24,8 @@
 /* Begin PBXFileReference section */
 		1519615E030754F31935E3FB /* Pods_Realtime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Realtime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		42B24726B18B9444EBA72C07 /* Pods-Realtime.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Realtime.debug.xcconfig"; path = "Target Support Files/Pods-Realtime/Pods-Realtime.debug.xcconfig"; sourceTree = "<group>"; };
-		4F13E936237DD5D9005BCAE9 /* ContactDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactDetailsView.swift; sourceTree = "<group>"; };
-		4F13E937237DD5D9005BCAE9 /* ContactsForAccountModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsForAccountModel.swift; sourceTree = "<group>"; };
-		4F13E938237DD5D9005BCAE9 /* ContactsForAccountListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsForAccountListView.swift; sourceTree = "<group>"; };
-		4F13E939237DD5D9005BCAE9 /* AccountsListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountsListView.swift; sourceTree = "<group>"; };
-		4F13E93A237DD5D9005BCAE9 /* ContactDetailModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactDetailModel.swift; sourceTree = "<group>"; };
-		4F13E940237DD5EE005BCAE9 /* usersyncs.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = usersyncs.json; sourceTree = "<group>"; };
-		4F13E941237DD5EE005BCAE9 /* userstore.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = userstore.json; sourceTree = "<group>"; };
-		4F13E946237DD72E005BCAE9 /* AccountsListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountsListModel.swift; sourceTree = "<group>"; };
+		4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpportunitiesListView.swift; sourceTree = "<group>"; };
+		4F13E94F237DD7FF005BCAE9 /* OpportunitiesListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpportunitiesListModel.swift; sourceTree = "<group>"; };
 		4FD6C4741B754AF1002F9F90 /* Realtime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Realtime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FD6C4781B754AF1002F9F90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4FD6C4791B754AF1002F9F90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -78,9 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				B73B520C234FA65F001B069B /* SceneDelegate.swift */,
-				4F13E939237DD5D9005BCAE9 /* AccountsListView.swift */,
-				4F13E938237DD5D9005BCAE9 /* ContactsForAccountListView.swift */,
-				4F13E936237DD5D9005BCAE9 /* ContactDetailsView.swift */,
+				4F13E94E237DD7FF005BCAE9 /* OpportunitiesListView.swift */,
 			);
 			name = SwiftUI;
 			sourceTree = "<group>";
@@ -88,9 +74,7 @@
 		4F13E945237DD62D005BCAE9 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				4F13E946237DD72E005BCAE9 /* AccountsListModel.swift */,
-				4F13E937237DD5D9005BCAE9 /* ContactsForAccountModel.swift */,
-				4F13E93A237DD5D9005BCAE9 /* ContactDetailModel.swift */,
+				4F13E94F237DD7FF005BCAE9 /* OpportunitiesListModel.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -127,8 +111,6 @@
 			isa = PBXGroup;
 			children = (
 				69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */,
-				4F13E941237DD5EE005BCAE9 /* userstore.json */,
-				4F13E940237DD5EE005BCAE9 /* usersyncs.json */,
 				B77BD8A221125B510036B284 /* bootconfig.plist */,
 				B7168FBB1FACC6F900A48DB5 /* LaunchScreen.storyboard */,
 				CEA8CA031F071B2300448B51 /* Images.xcassets */,
@@ -225,9 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				69B48C322AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy in Resources */,
-				4F13E943237DD5EE005BCAE9 /* userstore.json in Resources */,
 				B77BD8A321125B510036B284 /* bootconfig.plist in Resources */,
-				4F13E942237DD5EE005BCAE9 /* usersyncs.json in Resources */,
 				CEA8CA041F071B2300448B51 /* Images.xcassets in Resources */,
 				B7168FBC1FACC6F900A48DB5 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -285,13 +265,9 @@
 				B73B520D234FA65F001B069B /* SceneDelegate.swift in Sources */,
 				D33B88422CA60F0E00892D80 /* QrCodeScanController.swift in Sources */,
 				4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */,
-				4F13E93B237DD5D9005BCAE9 /* ContactDetailsView.swift in Sources */,
 				D33B88412CA60F0E00892D80 /* LoginTypeSelectionViewController.swift in Sources */,
-				4F13E947237DD72E005BCAE9 /* AccountsListModel.swift in Sources */,
-				4F13E93C237DD5D9005BCAE9 /* ContactsForAccountModel.swift in Sources */,
-				4F13E93F237DD5D9005BCAE9 /* ContactDetailModel.swift in Sources */,
-				4F13E93D237DD5D9005BCAE9 /* ContactsForAccountListView.swift in Sources */,
-				4F13E93E237DD5D9005BCAE9 /* AccountsListView.swift in Sources */,
+				4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */,
+				4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */,
 				4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
