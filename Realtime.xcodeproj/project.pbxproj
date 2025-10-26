@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,13 @@
 		4FD6C47A1B754AF1002F9F90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C4791B754AF1002F9F90 /* AppDelegate.swift */; };
 		4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD6C49D1B755242002F9F90 /* InitialViewController.swift */; };
 		69B48C322AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */; };
+		A0ABC6CA2EADBEFC00B60431 /* GRPCCodeGen in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6C92EADBEFC00B60431 /* GRPCCodeGen */; };
+		A0ABC6CC2EADBEFC00B60431 /* GRPCCore in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6CB2EADBEFC00B60431 /* GRPCCore */; };
+		A0ABC6CE2EADBEFC00B60431 /* GRPCInProcessTransport in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6CD2EADBEFC00B60431 /* GRPCInProcessTransport */; };
+		A0ABC6D12EADBF2600B60431 /* SwiftAvroCore in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D02EADBF2600B60431 /* SwiftAvroCore */; };
+		A0ABC6D42EADC19600B60431 /* GRPCNIOTransportHTTP2 in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D32EADC19600B60431 /* GRPCNIOTransportHTTP2 */; };
+		A0ABC6D72EADC1C100B60431 /* GRPCProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = A0ABC6D62EADC1C100B60431 /* GRPCProtobuf */; };
+		A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */; };
 		B7168FBC1FACC6F900A48DB5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7168FBB1FACC6F900A48DB5 /* LaunchScreen.storyboard */; };
 		B73B520D234FA65F001B069B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73B520C234FA65F001B069B /* SceneDelegate.swift */; };
 		B77BD8A321125B510036B284 /* bootconfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = B77BD8A221125B510036B284 /* bootconfig.plist */; };
@@ -34,6 +41,7 @@
 		4FD6C49D1B755242002F9F90 /* InitialViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Realtime.entitlements; sourceTree = "<group>"; };
 		69B48C312AD4E7AD0026AEC6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pubsub_api.pb.swift; sourceTree = "<group>"; };
 		B1330ABB1CD7D91761A89F96 /* Pods-Realtime.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Realtime.release.xcconfig"; path = "Target Support Files/Pods-Realtime/Pods-Realtime.release.xcconfig"; sourceTree = "<group>"; };
 		B7168FBB1FACC6F900A48DB5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "../mobile_sdk/SalesforceMobileSDK-iOS/shared/resources/LaunchScreen.storyboard"; sourceTree = "<group>"; };
 		B73B520C234FA65F001B069B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -48,6 +56,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0ABC6D72EADC1C100B60431 /* GRPCProtobuf in Frameworks */,
+				A0ABC6D42EADC19600B60431 /* GRPCNIOTransportHTTP2 in Frameworks */,
+				A0ABC6D12EADBF2600B60431 /* SwiftAvroCore in Frameworks */,
+				A0ABC6CA2EADBEFC00B60431 /* GRPCCodeGen in Frameworks */,
+				A0ABC6CE2EADBEFC00B60431 /* GRPCInProcessTransport in Frameworks */,
+				A0ABC6CC2EADBEFC00B60431 /* GRPCCore in Frameworks */,
 				E6A07D051AC177FE1B5C4FEF /* Pods_Realtime.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -104,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				4FF12F8A1DCA91F5004D9EF9 /* Realtime.entitlements */,
+				A0ABC6D82EADC22500B60431 /* pubsub_api.pb.swift */,
 				4FD6C4A11B755265002F9F90 /* Classes */,
 				4FD6C4771B754AF1002F9F90 /* Supporting Files */,
 			);
@@ -195,6 +210,12 @@
 				Base,
 			);
 			mainGroup = 4FD6C46B1B754AF1002F9F90;
+			packageReferences = (
+				A0ABC6C82EADBEFC00B60431 /* XCRemoteSwiftPackageReference "grpc-swift-2" */,
+				A0ABC6CF2EADBF2600B60431 /* XCRemoteSwiftPackageReference "SwiftAvroCore" */,
+				A0ABC6D22EADC19600B60431 /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */,
+				A0ABC6D52EADC1C100B60431 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */,
+			);
 			productRefGroup = 4FD6C4751B754AF1002F9F90 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -249,9 +270,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Realtime/Pods-Realtime-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -272,6 +297,7 @@
 				4F13E952237DD800005BCAE9 /* MainTabView.swift in Sources */,
 				4F13E950237DD7FF005BCAE9 /* OpportunitiesListView.swift in Sources */,
 				4F13E951237DD7FF005BCAE9 /* OpportunitiesListModel.swift in Sources */,
+				A0ABC6D92EADC22500B60431 /* pubsub_api.pb.swift in Sources */,
 				4FD6C4A01B755242002F9F90 /* InitialViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -448,6 +474,74 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A0ABC6C82EADBEFC00B60431 /* XCRemoteSwiftPackageReference "grpc-swift-2" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grpc/grpc-swift-2.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
+		A0ABC6CF2EADBF2600B60431 /* XCRemoteSwiftPackageReference "SwiftAvroCore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lynixliu/SwiftAvroCore.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		A0ABC6D22EADC19600B60431 /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grpc/grpc-swift-nio-transport.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.0;
+			};
+		};
+		A0ABC6D52EADC1C100B60431 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grpc/grpc-swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A0ABC6C92EADBEFC00B60431 /* GRPCCodeGen */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6C82EADBEFC00B60431 /* XCRemoteSwiftPackageReference "grpc-swift-2" */;
+			productName = GRPCCodeGen;
+		};
+		A0ABC6CB2EADBEFC00B60431 /* GRPCCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6C82EADBEFC00B60431 /* XCRemoteSwiftPackageReference "grpc-swift-2" */;
+			productName = GRPCCore;
+		};
+		A0ABC6CD2EADBEFC00B60431 /* GRPCInProcessTransport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6C82EADBEFC00B60431 /* XCRemoteSwiftPackageReference "grpc-swift-2" */;
+			productName = GRPCInProcessTransport;
+		};
+		A0ABC6D02EADBF2600B60431 /* SwiftAvroCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6CF2EADBF2600B60431 /* XCRemoteSwiftPackageReference "SwiftAvroCore" */;
+			productName = SwiftAvroCore;
+		};
+		A0ABC6D32EADC19600B60431 /* GRPCNIOTransportHTTP2 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6D22EADC19600B60431 /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */;
+			productName = GRPCNIOTransportHTTP2;
+		};
+		A0ABC6D62EADC1C100B60431 /* GRPCProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0ABC6D52EADC1C100B60431 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */;
+			productName = GRPCProtobuf;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4FD6C46C1B754AF1002F9F90 /* Project object */;
 }
