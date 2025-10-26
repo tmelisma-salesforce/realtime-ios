@@ -1,0 +1,256 @@
+[INIT] Initializing semaphore with value 1
+[INIT] Semaphore initialized
+[INIT] Global variables initialized
+
+============================================================
+STEP 1: OAuth Authentication
+============================================================
+[get_oauth_token] Starting OAuth authentication
+[get_oauth_token] Token URL: https://your-domain.my.salesforce.com/services/oauth2/token
+[get_oauth_token] Grant Type: client_credentials
+[get_oauth_token] Client ID: 3MVG9yAAFCYW6OqXe1sQ...
+[get_oauth_token] Sending POST request...
+[get_oauth_token] Response received in 0.60s
+[get_oauth_token] Status code: 200
+[get_oauth_token] Parsing JSON response...
+[get_oauth_token] Response keys: ['access_token', 'signature', 'scope', 'instance_url', 'id', 'token_type', 'issued_at']
+[get_oauth_token] Extracting organization ID...
+[get_oauth_token] ID URL: https://login.salesforce.com/id/00Dxx0000001gERXXX/005xx000001AbCDEFG
+[get_oauth_token] ID URL parts: ['https:', '', 'login.salesforce.com', 'id', '00Dxx0000001gERXXX', '005xx000001AbCDEFG']
+[get_oauth_token] Extracted Org ID: 00Dxx0000001gERXXX
+[get_oauth_token] ✓ Successfully authenticated!
+  Access Token: 00DKd00000HRAR8!AQUA... (length: 112)
+  Instance URL: https://your-domain.my.salesforce.com
+  Org ID: 00Dxx0000001gERXXX
+
+============================================================
+STEP 2: Setting up gRPC Channel
+============================================================
+Loading SSL certificates from: /Users/tmelisma/Development/pubsub-python/.venv/lib/python3.11/site-packages/certifi/cacert.pem
+✓ SSL credentials loaded
+Creating secure gRPC channel to api.pubsub.salesforce.com:7443...
+✓ Secure channel created
+
+============================================================
+STEP 3: Creating Pub/Sub Stub
+============================================================
+Generating PubSubStub from channel...
+✓ PubSubStub created successfully
+
+============================================================
+STEP 4: Preparing Authentication Metadata
+============================================================
+✓ Authentication metadata prepared:
+  Access Token: 00DKd00000HRAR8!AQUA...
+  Instance URL: https://your-domain.my.salesforce.com
+  Tenant ID: 00Dxx0000001gERXXX
+
+============================================================
+STEP 5: Subscribing to Topic
+============================================================
+Topic: /data/OpportunityChangeEvent
+Replay Preset: LATEST
+Num Requested: 1
+Waiting for Opportunity change events...
+(Make a change to an Opportunity in Salesforce to see events)
+============================================================
+
+[main] Calling stub.Subscribe()...
+
+[fetchReqStream] Generator initialized for topic: /data/OpportunityChangeEvent
+[fetchReqStream] Thread ID: 6173552640
+[fetchReqStream] Thread name: Thread-2 (_run)
+
+[fetchReqStream] --- Loop iteration 1 ---
+[fetchReqStream] Current time: 10:56:55.860
+[fetchReqStream] Attempting to acquire semaphore...
+[fetchReqStream] (This will block if semaphore is locked)
+[fetchReqStream] ✓ Semaphore acquired after 0.000s
+[fetchReqStream] Creating FetchRequest #1
+[fetchReqStream]   Topic: /data/OpportunityChangeEvent
+[fetchReqStream]   Replay Preset: LATEST
+[fetchReqStream]   Num Requested: 1
+[fetchReqStream] Yielding FetchRequest #1 to gRPC...
+[main] ✓ Subscribe call successful, starting event loop...
+[fetchReqStream] FetchRequest #1 sent, waiting for response...
+
+[fetchReqStream] --- Loop iteration 2 ---
+[fetchReqStream] Current time: 10:57:03.014
+[fetchReqStream] Attempting to acquire semaphore...
+[fetchReqStream] (This will block if semaphore is locked)
+
+============================================================
+[main] ⬇️  RECEIVED FetchResponse from server
+[main] Time: 10:57:21.698
+[main] Has events: True
+[main] Latest Replay ID: b'\x00\x00\x00\x00\x00Z\x94\xf0\x00\x00'...
+[main] Pending num_requested: 0
+============================================================
+[main] ⬆️  Releasing semaphore to allow next FetchRequest...
+[main] ✓ Semaphore released
+[main] 🎉 FetchResponse contains 1 event(s)!
+[main] Total events received this session: 1
+
+[Oct 25, 2025 10:57:21 AM PDT]
+📥 Received 1 event(s)
+
+────────────────────────────────────────────────────────────
+[main] 🔄 Processing event #1 of 1
+────────────────────────────────────────────────────────────
+[main] Event Replay ID: b'\x00\x00\x00\x00\x00Z\x94\xf0\x00\x00'...
+[main] Event Schema ID: KxC1P8xW4-iTJxZQ6PlZpw
+[main] Payload size: 328 bytes
+[main] 📥 Fetching schema from server (GetSchema RPC)...
+[fetchReqStream] ✓ Semaphore acquired after 18.684s
+[fetchReqStream] Creating FetchRequest #2
+[fetchReqStream]   Topic: /data/OpportunityChangeEvent
+[fetchReqStream]   Replay Preset: LATEST
+[fetchReqStream]   Num Requested: 1
+[fetchReqStream] Yielding FetchRequest #2 to gRPC...
+[fetchReqStream] FetchRequest #2 sent, waiting for response...
+
+[fetchReqStream] --- Loop iteration 3 ---
+[fetchReqStream] Current time: 10:57:21.699
+[fetchReqStream] Attempting to acquire semaphore...
+[fetchReqStream] (This will block if semaphore is locked)
+[main] ✓ Schema fetched in 1.035s (length: 10127 chars)
+[decode] Starting to decode payload (size: 328 bytes)
+[decode] Parsing Avro schema...
+[decode] Schema parsed successfully
+[decode] Reading data from binary decoder...
+[decode] Decode completed successfully
+
+🔔 Event #1:
+{
+  "ChangeEventHeader": {
+    "entityName": "Opportunity",
+    "recordIds": [
+      "006xx000000AbCDEFG"
+    ],
+    "changeType": "UPDATE",
+    "changeOrigin": "com/salesforce/api/soap/65.0;client=SfdcInternalAPI/",
+    "transactionKey": "0006e261-c967-31c3-f492-0ea68f20d733",
+    "sequenceNumber": 1,
+    "commitTimestamp": 1761415040000,
+    "commitNumber": 12883105119541,
+    "commitUser": "005xx000001AbCDEFG",
+    "nulledFields": [],
+    "diffFields": [],
+    "changedFields": [
+      "0xA0060140"
+    ]
+  },
+  "AccountId": null,
+  "RecordTypeId": null,
+  "IsPrivate": null,
+  "Name": null,
+  "Description": null,
+  "StageName": "Proposal/Quote",
+  "Amount": null,
+  "Probability": 75.0,
+  "ExpectedRevenue": null,
+  "TotalOpportunityQuantity": null,
+  "CloseDate": null,
+  "Type": null,
+  "NextStep": null,
+  "LeadSource": null,
+  "IsClosed": null,
+  "IsWon": null,
+  "ForecastCategory": "BestCase",
+  "ForecastCategoryName": "Best Case",
+  "CurrencyIsoCode": null,
+  "CampaignId": null,
+  "HasOpportunityLineItem": null,
+  "IsSplit": null,
+  "Pricebook2Id": null,
+  "OwnerId": null,
+  "Territory2Id": null,
+  "IsExcludedFromTerritory2Filter": null,
+  "CreatedDate": null,
+  "CreatedById": null,
+  "LastModifiedDate": 1761415040000,
+  "LastModifiedById": null,
+  "LastStageChangeDate": 1761415040000,
+  "ContactId": null,
+  "SourceId": null,
+  "PartnerAccountId": null,
+  "SyncedQuoteId": null,
+  "ContractId": null,
+  "LastAmountChangedHistoryId": null,
+  "LastCloseDateChangedHistoryId": null,
+  "External_ID__c": null,
+  "db_days_CloseDate__c": null,
+  "CloseDate_TODAY__c": 340.0,
+  "SDO_Pardot_Is_B2BMA_Plus_Data__c": null,
+  "SDO_Quip_Close_Plan_Quip__c": null,
+  "SDO_Sales_Discount__c": null,
+  "SDO_Sales_Partner_Owner__c": null,
+  "SDO_Sales_Primary_Contact__c": null,
+  "SDO_Sales_Reason_Lost__c": null,
+  "SDO_Sales_Stalled_Opportunity__c": null,
+  "SDO_Sales_Winning_Competitor__c": null,
+  "SDO_Sales_Status_Value__c": "good",
+  "DateTimeCreated__c": null,
+  "ED_Leading_Causes__c": null,
+  "ED_Outcome__c": null,
+  "ED_Prescription__c": null,
+  "Exec_Meeting__c": null,
+  "Interactive_Demo__c": null,
+  "ED_Close_Date_Delta__c": null,
+  "ED_Predicted_Close_Date__c": null,
+  "Products__c": null,
+  "SDO_Service_Case__c": null,
+  "SDO_SFS_Work_Order__c": null,
+  "SBQQ__AmendedContract__c": null,
+  "SBQQ__Contracted__c": null,
+  "SBQQ__CreateContractedPrices__c": null,
+  "SBQQ__OrderGroupID__c": null,
+  "SBQQ__Ordered__c": null,
+  "SBQQ__PrimaryQuote__c": null,
+  "SBQQ__QuotePricebookId__c": null,
+  "SBQQ__Renewal__c": null,
+  "SBQQ__RenewedContract__c": null,
+  "sbaa__ApprovalStatus__c": null,
+  "sbaa__ApprovalStep__c": null,
+  "sbaa__Approver__c": null,
+  "sbaa__StepApproved__c": null,
+  "sbaa__SubmittedDate__c": null,
+  "sbaa__SubmittedUser__c": null,
+  "ApprovalStatus__c": null,
+  "DB_Amount__c": null,
+  "DB_Days__c": null,
+  "SDO_MAPS_Dataset_Split__c": null,
+  "SDO_MAPS_Tag_Opportunity__c": null,
+  "SDO_Sales_Competitor__c": null,
+  "SDO_Sales_Complete_ROI_Analysis__c": null,
+  "SDO_Sales_Contract_Terms__c": null,
+  "SDO_Sales_Project_Budgeted__c": null,
+  "SDO_Sales_Project_Manager_Contact__c": null,
+  "LastActivityDate__c": null,
+  "LastModifiedDate__c": null,
+  "analyticsdemo_batch_id__c": null
+}
+
+📋 Change Summary:
+   Entity: Opportunity
+   Change Type: UPDATE
+   Record IDs: ['006xx000000AbCDEFG']
+   Commit User: 005xx000001AbCDEFG
+   Transaction Key: 0006e261-c967-31c3-f492-0ea68f20d733
+
+[main] 💾 Storing replay ID for potential replay...
+[main] Replay ID: b'\x00\x00\x00\x00\x00Z\x94\xf0\x00\x00'...
+[main] (Use this to resume from this point if needed)
+[main] Session stats: 1 events, 0 keepalives, 2 fetch requests
+
+
+============================================================
+[main] 👋 User interrupted (Ctrl+C)
+============================================================
+[main] Shutting down gracefully...
+[main] Final session statistics:
+  Events received: 1
+  Keepalives received: 0
+  Fetch requests sent: 2
+  Last replay ID: b'\x00\x00\x00\x00\x00Z\x94\xf0\x00\x00'...
+[main] Connection closed.

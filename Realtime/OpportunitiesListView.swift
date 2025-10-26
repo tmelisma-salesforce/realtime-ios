@@ -71,9 +71,17 @@ struct OpportunitiesListView: View {
                 }
                 .padding(.vertical, 4)
             }
+            .refreshable {
+                print("🔄 OpportunitiesListView: Pull-to-refresh triggered by user")
+                await self.viewModel.fetchOpportunitiesAsync()
+                print("✅ OpportunitiesListView: Pull-to-refresh completed")
+            }
             .navigationBarTitle(Text("Opportunities"), displayMode: .inline)
         }
-        .onAppear { self.viewModel.fetchOpportunities() }
+        .onAppear { 
+            print("👁️ OpportunitiesListView: View appeared, loading initial data")
+            self.viewModel.fetchOpportunities()
+        }
     }
 }
 

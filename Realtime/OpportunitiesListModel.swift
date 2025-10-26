@@ -54,21 +54,69 @@ class OpportunitiesListModel: ObservableObject {
     private var opportunitiesCancellable: AnyCancellable?
     
     func fetchOpportunities() {
+        print("📋 OpportunitiesListModel: Starting fetchOpportunities()")
         let request = RestClient.shared.request(forQuery: "SELECT Id, Name, StageName, Amount, CloseDate, Account.Name FROM Opportunity ORDER BY CloseDate DESC LIMIT 100", apiVersion: nil)
         
+        print("📋 OpportunitiesListModel: Sending REST API request")
         opportunitiesCancellable = RestClient.shared.publisher(for: request)
             .receive(on: RunLoop.main)
             .tryMap({ (response) -> Data in
-                response.asData()
+                print("📋 OpportunitiesListModel: Received response from API")
+                return response.asData()
             })
             .decode(type: OpportunityResponse.self, decoder: JSONDecoder())
             .map({ (record) -> [Opportunity] in
-                record.records
+                print("📋 OpportunitiesListModel: Decoded \(record.records.count) opportunities")
+                return record.records
             })
-            .catch( { error in
-                Just([])
+            .catch( { error -> Just<[Opportunity]> in
+                print("❌ OpportunitiesListModel: Error fetching opportunities - \(error)")
+                return Just([])
             })
             .assign(to: \.opportunities, on: self)        
+    }
+    
+    @MainActor
+    func fetchOpportunitiesAsync() async {
+        print("🔄 OpportunitiesListModel: Starting async fetch with minimum 2-second display")
+        let startTime = Date()
+        
+        await withCheckedContinuation { continuation in
+            print("📋 OpportunitiesListModel: Initiating REST API call")
+            let request = RestClient.shared.request(forQuery: "SELECT Id, Name, StageName, Amount, CloseDate, Account.Name FROM Opportunity ORDER BY CloseDate DESC LIMIT 100", apiVersion: nil)
+            
+            opportunitiesCancellable = RestClient.shared.publisher(for: request)
+                .receive(on: RunLoop.main)
+                .tryMap({ (response) -> Data in
+                    print("📋 OpportunitiesListModel: Received response from Salesforce API")
+                    return response.asData()
+                })
+                .decode(type: OpportunityResponse.self, decoder: JSONDecoder())
+                .map({ (record) -> [Opportunity] in
+                    print("📋 OpportunitiesListModel: Successfully decoded \(record.records.count) opportunities")
+                    return record.records
+                })
+                .catch( { error -> Just<[Opportunity]> in
+                    print("❌ OpportunitiesListModel: Error occurred - \(error.localizedDescription)")
+                    return Just([])
+                })
+                .sink { [weak self] opportunities in
+                    print("📋 OpportunitiesListModel: Updating opportunities list")
+                    self?.opportunities = opportunities
+                    continuation.resume()
+                }
+        }
+        
+        let elapsed = Date().timeIntervalSince(startTime)
+        print("⏱️ OpportunitiesListModel: Data fetch completed in \(String(format: "%.2f", elapsed)) seconds")
+        
+        if elapsed < 2.0 {
+            let remainingTime = 2.0 - elapsed
+            print("⏳ OpportunitiesListModel: Waiting additional \(String(format: "%.2f", remainingTime)) seconds to reach minimum 2-second display")
+            try? await Task.sleep(nanoseconds: UInt64(remainingTime * 1_000_000_000))
+        }
+        
+        print("✅ OpportunitiesListModel: Refresh complete, dismissing pull-to-refresh indicator")
     }
 }
 
