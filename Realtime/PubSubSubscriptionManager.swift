@@ -310,31 +310,6 @@ class PubSubSubscriptionManager: ObservableObject {
         
         // Decode Avro payload using the schema stored in the Avro instance
         // The decodeSchema() call above sets the schema internally in the Avro object
-        
-        // DEBUG: Dump the schema to understand the structure
-        print("🔍 DEBUG: About to decode payload")
-        if let schema = avro.getSchema() {
-            print("   Schema type: \(schema)")
-            // Try to encode schema to JSON to see it
-            do {
-                let schemaData = try avro.encodeSchema(schema: schema)
-                if let schemaString = String(data: schemaData, encoding: .utf8) {
-                    print("   📋 SCHEMA JSON (first 500 chars):")
-                    print("   \(schemaString.prefix(500))")
-                }
-            } catch {
-                print("   ⚠️ Could not encode schema: \(error)")
-            }
-        }
-        
-        // DEBUG: Dump first 100 bytes of payload in hex
-        print("   📦 PAYLOAD (first 100 bytes as hex):")
-        let hexBytes = payload.prefix(100).map { String(format: "%02x", $0) }.joined(separator: " ")
-        print("   \(hexBytes)")
-        print("   📦 PAYLOAD (first 100 bytes as decimal):")
-        let decBytes = payload.prefix(100).map { String($0) }.joined(separator: " ")
-        print("   \(decBytes)")
-        
         do {
             let decodedPayload: OpportunityChangeEventPayload = try avro.decode(from: payload)
             

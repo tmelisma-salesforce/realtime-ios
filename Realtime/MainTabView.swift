@@ -67,6 +67,7 @@ struct RealtimeView: View {
                 List {
                     ForEach(viewModel.opportunities) { opportunity in
                         OpportunityRowView(opportunity: opportunity)
+                            .id("\(opportunity.Id)-\(opportunity.lastUpdated?.timeIntervalSince1970 ?? 0)")
                     }
                 }
                 .listStyle(.plain)

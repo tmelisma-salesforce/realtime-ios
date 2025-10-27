@@ -130,42 +130,51 @@ class RealtimeOpportunitiesModel: ObservableObject {
             return
         }
         
-        var opportunity = opportunities[index]
         let changedFields = event.getChangedFieldNames()
-        
         print("📝 RealtimeOpportunitiesModel: Changed fields: \(changedFields)")
+        print("   BEFORE UPDATE: Name=\(opportunities[index].Name), StageName=\(opportunities[index].StageName ?? "nil"), Amount=\(opportunities[index].Amount?.description ?? "nil")")
         
-        // Update only the changed fields
+        // Update fields directly in the array
         if let name = event.Name {
-            opportunity.Name = name
+            print("   → Updating Name: '\(opportunities[index].Name)' → '\(name)'")
+            opportunities[index].Name = name
         }
         if let stageName = event.StageName {
-            opportunity.StageName = stageName
+            print("   → Updating StageName: '\(opportunities[index].StageName ?? "nil")' → '\(stageName)'")
+            opportunities[index].StageName = stageName
         }
         if let amount = event.Amount {
-            opportunity.Amount = amount
+            print("   → Updating Amount: \(opportunities[index].Amount?.description ?? "nil") → \(amount)")
+            opportunities[index].Amount = amount
         }
         if let closeDateMillis = event.CloseDate {
-            // Convert milliseconds since epoch to date string (YYYY-MM-DD format)
             let date = Date(timeIntervalSince1970: TimeInterval(closeDateMillis) / 1000.0)
             let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withFullDate]  // Just the date, no time
-            opportunity.CloseDate = formatter.string(from: date)
+            formatter.formatOptions = [.withFullDate]
+            let newCloseDate = formatter.string(from: date)
+            print("   → Updating CloseDate: '\(opportunities[index].CloseDate ?? "nil")' → '\(newCloseDate)'")
+            opportunities[index].CloseDate = newCloseDate
         }
         
-        // Track changed fields (cumulative, never cleared)
-        opportunity.changedFields.formUnion(changedFields)
-        opportunity.lastUpdated = Date()
-        opportunity.justChanged = true // Trigger initial animation
+        // Track changed fields
+        opportunities[index].changedFields.formUnion(changedFields)
+        opportunities[index].lastUpdated = Date()
+        opportunities[index].justChanged = true
         
-        // Remove from current position
-        opportunities.remove(at: index)
+        print("   AFTER UPDATE: Name=\(opportunities[index].Name), StageName=\(opportunities[index].StageName ?? "nil"), Amount=\(opportunities[index].Amount?.description ?? "nil")")
         
-        // Insert at top with animation
+        // Now move to top
+        let updatedOpportunity = opportunities.remove(at: index)
+        
         withAnimation(.spring()) {
-            opportunities.insert(opportunity, at: 0)
+            opportunities.insert(updatedOpportunity, at: 0)
             rebuildOpportunityMap()
         }
+        
+        // Verify the update stuck
+        print("   🔍 VERIFY: opportunities[0] after insert:")
+        print("      Name=\(opportunities[0].Name), StageName=\(opportunities[0].StageName ?? "nil"), Amount=\(opportunities[0].Amount?.description ?? "nil")")
+        print("      changedFields=\(opportunities[0].changedFields)")
         
         // Reset justChanged after animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
