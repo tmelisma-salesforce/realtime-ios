@@ -85,69 +85,113 @@ struct RealtimeView: View {
 struct OpportunityRowView: View {
     let opportunity: Opportunity
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            // Name
-            HighlightableText(
-                text: opportunity.Name,
-                isChanged: opportunity.changedFields.contains("Name")
-            )
-            .font(.headline)
-            
-            HStack(spacing: 10) {
-                // Account Name
-                if let accountName = opportunity.Account?.Name {
-                    Text(accountName)
-                        .font(.subheadline)
-                } else {
-                    Text("No Account")
-                        .font(.subheadline)
-                }
-                
-                // Stage Name
-                if let stageName = opportunity.StageName {
-                    Text("•")
-                    HighlightableText(
-                        text: stageName,
-                        isChanged: opportunity.changedFields.contains("StageName")
-                    )
-                    .font(.subheadline)
-                }
-            }
-            
-            HStack(spacing: 10) {
-                // Amount
-                if let amount = opportunity.Amount {
-                    HighlightableText(
-                        text: String(format: "$%.2f", amount),
-                        isChanged: opportunity.changedFields.contains("Amount")
-                    )
-                    .font(.subheadline)
-                }
-                
-                // Close Date
-                if let closeDate = opportunity.CloseDate {
-                    if opportunity.Amount != nil {
-                        Text("•")
-                    }
-                    HighlightableText(
-                        text: closeDate,
-                        isChanged: opportunity.changedFields.contains("CloseDate")
-                    )
-                    .font(.subheadline)
-                }
-            }
+    @State private var currentTime = Date()
+    
+    // Timer that fires every minute
+    let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    
+    // Computed property for relative time
+    private var relativeTimeText: String? {
+        guard let lastUpdated = opportunity.lastUpdated else { return nil }
+        let minutes = Int(currentTime.timeIntervalSince(lastUpdated)) / 60
+        if minutes == 0 {
+            return "Updated just now"
+        } else if minutes == 1 {
+            return "Updated 1 min ago"
+        } else {
+            return "Updated \(minutes) min ago"
         }
-        .padding(.vertical, 4)
+    }
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Blue left border for updated opportunities
+            if opportunity.lastUpdated != nil {
+                Rectangle()
+                    .fill(Color.blue)
+                    .frame(width: 4)
+            }
+            
+            VStack(alignment: .leading, spacing: 5) {
+                // Name
+                HighlightableText(
+                    text: opportunity.Name,
+                    isChanged: opportunity.changedFields.contains("Name")
+                )
+                .font(.headline)
+                
+                HStack(spacing: 10) {
+                    // Account Name
+                    if let accountName = opportunity.Account?.Name {
+                        Text(accountName)
+                            .font(.subheadline)
+                    } else {
+                        Text("No Account")
+                            .font(.subheadline)
+                    }
+                    
+                    // Stage Name
+                    if let stageName = opportunity.StageName {
+                        Text("•")
+                        HighlightableText(
+                            text: stageName,
+                            isChanged: opportunity.changedFields.contains("StageName")
+                        )
+                        .font(.subheadline)
+                    }
+                }
+                
+                HStack(spacing: 10) {
+                    // Amount
+                    if let amount = opportunity.Amount {
+                        HighlightableText(
+                            text: String(format: "$%.2f", amount),
+                            isChanged: opportunity.changedFields.contains("Amount")
+                        )
+                        .font(.subheadline)
+                    }
+                    
+                    // Close Date
+                    if let closeDate = opportunity.CloseDate {
+                        if opportunity.Amount != nil {
+                            Text("•")
+                        }
+                        HighlightableText(
+                            text: closeDate,
+                            isChanged: opportunity.changedFields.contains("CloseDate")
+                        )
+                        .font(.subheadline)
+                    }
+                }
+                
+                // Timestamp for updated opportunities
+                if let timeText = relativeTimeText {
+                    Text(timeText)
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                        .padding(.top, 2)
+                }
+            }
+            .padding(.leading, opportunity.lastUpdated != nil ? 8 : 0)
+            .padding(.vertical, 4)
+            
+            Spacer()
+        }
+        .onAppear {
+            currentTime = Date()
+        }
+        .onReceive(timer) { _ in
+            currentTime = Date()
+        }
     }
 }
 
-/// Text view with permanent pulsing highlight for changed fields
+/// Text view with permanent pulsing gray highlight for changed fields
 struct HighlightableText: View {
     let text: String
     let isChanged: Bool
     
-    @State private var pulseOpacity: Double = 0.6
+    @State private var grayShade: Double = 0.85
     
     var body: some View {
         Text(text)
@@ -155,14 +199,13 @@ struct HighlightableText: View {
             .padding(.vertical, isChanged ? 2 : 0)
             .background(
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.blue.opacity(isChanged ? 0.2 : 0))
-                    .opacity(isChanged ? pulseOpacity : 0)
+                    .fill(Color.gray.opacity(isChanged ? grayShade : 0))
             )
             .onAppear {
-                // Start continuous pulsing animation for changed fields
+                // Start continuous pulsing animation for changed fields (never-ending)
                 if isChanged {
                     withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                        pulseOpacity = 0.3
+                        grayShade = 0.4
                     }
                 }
             }
