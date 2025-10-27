@@ -29,6 +29,9 @@ struct ConnectionStatusView: View {
     let status: PubSubConnectionStatus
     let lastUpdateTime: Date?
     
+    @State private var currentTime = Date()
+    let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    
     var body: some View {
         HStack(spacing: 8) {
             // Traffic light indicator
@@ -43,9 +46,9 @@ struct ConnectionStatusView: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
-                // Show last update time if not connected
+                // Show last update time if disconnected OR connecting
                 if status != .connected, let lastUpdate = lastUpdateTime {
-                    Text("Last update: \(formatTimestamp(lastUpdate))")
+                    Text("Last updated: \(formatTimestamp(lastUpdate))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -55,6 +58,12 @@ struct ConnectionStatusView: View {
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
         .cornerRadius(20)
+        .onAppear {
+            currentTime = Date()
+        }
+        .onReceive(timer) { _ in
+            currentTime = Date()
+        }
     }
     
     /// Get color for current status
@@ -69,11 +78,14 @@ struct ConnectionStatusView: View {
         }
     }
     
-    /// Format timestamp as relative time
+    /// Format timestamp as minutes ago
     private func formatTimestamp(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
+        let minutes = Int(currentTime.timeIntervalSince(date)) / 60
+        if minutes == 0 {
+            return "0m ago"
+        } else {
+            return "\(minutes)m ago"
+        }
     }
 }
 

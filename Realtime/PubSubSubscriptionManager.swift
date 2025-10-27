@@ -26,6 +26,7 @@ import Foundation
 import Combine
 import SwiftAvroCore
 import GRPCCore
+import Network
 
 /// Manages the long-lived Pub/Sub API subscription to OpportunityChangeEvent
 @available(iOS 18.0, *)
@@ -41,6 +42,10 @@ class PubSubSubscriptionManager: ObservableObject {
     private var cachedAvro: Avro?
     private var cachedSchemaId: String?
     // Note: No need to cache the schema separately - it's stored inside the Avro instance
+    
+    // Network monitoring
+    private var networkMonitor: NWPathMonitor?
+    private let monitorQueue = DispatchQueue(label: "com.salesforce.network-monitor")
     
     private let topicName = "/data/OpportunityChangeEvent"
     
@@ -72,6 +77,53 @@ class PubSubSubscriptionManager: ObservableObject {
         subscriptionTask = nil
         connectionStatus = .disconnected
         latestReplayId = nil
+    }
+    
+    // MARK: - Network Monitoring
+    
+    /// Start monitoring network connectivity changes
+    func startNetworkMonitoring() {
+        print("📡 PubSubSubscriptionManager: Starting network monitoring")
+        
+        let monitor = NWPathMonitor()
+        networkMonitor = monitor
+        
+        monitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                
+                let isConnected = path.status == .satisfied
+                print("📡 PubSubSubscriptionManager: Network status changed - \(isConnected ? "CONNECTED" : "DISCONNECTED")")
+                print("   Current connection status: \(self.connectionStatus)")
+                
+                if isConnected {
+                    // Network came back - but only reconnect if we're actually disconnected
+                    if self.connectionStatus == .disconnected {
+                        print("   ⏳ Waiting 2 seconds before reconnecting...")
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        print("   → Attempting reconnection...")
+                        self.connect()
+                    } else {
+                        print("   ℹ️ Already connecting/connected, ignoring network up event")
+                    }
+                } else {
+                    // Network went down - disconnect immediately
+                    print("   → Disconnecting due to network loss...")
+                    self.disconnect()
+                }
+            }
+        }
+        
+        monitor.start(queue: monitorQueue)
+        print("✅ PubSubSubscriptionManager: Network monitoring started")
+    }
+    
+    /// Stop monitoring network connectivity
+    func stopNetworkMonitoring() {
+        print("📡 PubSubSubscriptionManager: Stopping network monitoring")
+        networkMonitor?.cancel()
+        networkMonitor = nil
+        print("✅ PubSubSubscriptionManager: Network monitoring stopped")
     }
     
     // MARK: - Subscription Logic

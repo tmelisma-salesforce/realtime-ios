@@ -65,8 +65,18 @@ class RealtimeOpportunitiesModel: ObservableObject {
         // Fetch initial data from REST API
         fetchInitialOpportunities()
         
+        // Start network monitoring
+        subscriptionManager.startNetworkMonitoring()
+        
         // Start Pub/Sub subscription
         subscriptionManager.connect()
+    }
+    
+    /// Cleanup when leaving the Realtime tab
+    func cleanup() {
+        print("🧹 RealtimeOpportunitiesModel: Cleaning up...")
+        subscriptionManager.stopNetworkMonitoring()
+        subscriptionManager.disconnect()
     }
     
     /// Fetch initial opportunities list via REST API (same as traditional view)
@@ -266,15 +276,6 @@ class RealtimeOpportunitiesModel: ObservableObject {
         for (index, opp) in opportunities.enumerated() {
             opportunityMap[opp.Id] = index
         }
-    }
-    
-    /// Cleanup (note: we do NOT disconnect subscription - it stays alive)
-    func cleanup() {
-        print("🧹 RealtimeOpportunitiesModel: Cleanup called (subscription stays alive)")
-        // Do not call subscriptionManager.disconnect() - keep subscription alive
-        opportunitiesCancellable?.cancel()
-        statusCancellable?.cancel()
-        lastUpdateCancellable?.cancel()
     }
 }
 

@@ -77,6 +77,9 @@ struct RealtimeView: View {
             .onAppear {
                 viewModel.initialize()
             }
+            .onDisappear {
+                viewModel.cleanup()
+            }
         }
     }
 }
